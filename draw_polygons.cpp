@@ -10,30 +10,30 @@
 #include <GL/glut.h>
 #endif
 
-#define DEFAULT_WIDTH 500
-#define DEFAULT_HEIGHT 500
-#define MAX_POINTS 6 //maximum points per polygon
-#define MAX_POLYGONS 5
-
-typedef struct vertex3f {
-    float x;
-    float y;
-    float z; // not particularly relevant for our purposes, but must be there
-} vertex3f;
-
-typedef struct color4f {
-    float r;
-    float g;
-    float b;
-    float a; // alpha
-} color4f;
-
-typedef struct polygon {
-    int num_p; // number of points (cannot exceed MAX_POINTS)
-    color4f color;
-    vertex3f points[MAX_POINTS];
-} polygon;
-
+//#define DEFAULT_WIDTH 500
+//#define DEFAULT_HEIGHT 500
+//#define MAX_POINTS 6 //maximum points per polygon
+//#define MAX_POLYGONS 5
+//
+//typedef struct vertex3f {
+//    float x;
+//    float y;
+//    float z; // not particularly relevant for our purposes, but must be there
+//} vertex3f;
+//
+//typedef struct color4f {
+//    float r;
+//    float g;
+//    float b;
+//    float a; // alpha
+//} color4f;
+//
+//typedef struct polygon {
+//    int num_p; // number of points (cannot exceed MAX_POINTS)
+//    color4f color;
+//    vertex3f points[MAX_POINTS];
+//} polygon;
+//
 int num_polygons = 0;
 polygon polygons[MAX_POLYGONS];
 
@@ -94,7 +94,7 @@ int main(int argc, char** argv){
 
     //create 3 polygons
     for(i=0;i<3;i++) {
-        polygons[i].num_p = 4;
+        polygons[i].num_p = 3;
         polygons[i].points[0].x = (float)rand()/(float)RAND_MAX;
         polygons[i].points[0].y = (float)rand()/(float)RAND_MAX;
         polygons[i].points[0].z = 0.0f;
