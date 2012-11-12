@@ -24,12 +24,12 @@ void display(void){
 	
 	//draw a polygon	
     for(i=0;i<num_polygons;i++) {
-        glColor4f(polygons[i].color.r, polygons[i].color.g, polygons[i].color.b, polygons[i].color.a);
-        printf("%f %f %f %f\n", polygons[i].color.r, polygons[i].color.g, polygons[i].color.b, polygons[i].color.a);
+        glColor4fv( (GLfloat*) &polygons[i].color);
+        //printf("%f %f %f %f\n", polygons[i].color.r, polygons[i].color.g, polygons[i].color.b, polygons[i].color.a);
         glBegin(GL_POLYGON);
             for(j=0;j<polygons[i].num_p;j++) {
-                glVertex3f(polygons[i].points[j].x, polygons[i].points[j].y, polygons[i].points[j].z);
-                printf("    %f, %f, %f\n", polygons[i].points[j].x, polygons[i].points[j].y, polygons[i].points[j].z);
+                glVertex3fv( (GLfloat*) &polygons[i].points[j]);
+                //printf("    %f, %f, %f\n", polygons[i].points[j].x, polygons[i].points[j].y, polygons[i].points[j].z);
             }
         glEnd();
     }
@@ -50,7 +50,7 @@ void init(void){
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 2.0f); // top left is (0,0) displays depths between -1 and 2
-    glEnable(GL_BLEND);
+    glEnable(GL_BLEND); //required for transperency
     glBlendFunc(GL_ONE,GL_ONE);
 	
 }
