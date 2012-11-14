@@ -1,4 +1,4 @@
-// Stephen Kowalewski
+// Herb Susmann and Stephen Kowalewski
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,44 +55,44 @@ void init(void){
 	
 }
 
-
-int main(int argc, char** argv){
-    int i;
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-	glutInitWindowSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-
-    srand(time(NULL));
-
-    //create 3 polygons
-    for(i=0;i<3;i++) {
-        polygons[i].num_p = 3;
-        polygons[i].points[0].x = (float)rand()/(float)RAND_MAX;
-        polygons[i].points[0].y = (float)rand()/(float)RAND_MAX;
-        polygons[i].points[0].z = (float)i/10.0f;
-        polygons[i].points[1].x = (float)rand()/(float)RAND_MAX;
-        polygons[i].points[1].y = (float)rand()/(float)RAND_MAX;
-        polygons[i].points[1].z = (float)i/10.0f;
-        polygons[i].points[2].x = (float)rand()/(float)RAND_MAX;
-        polygons[i].points[2].y = (float)rand()/(float)RAND_MAX;
-        polygons[i].points[2].z = (float)i/10.0f;
-        polygons[i].points[3].x = (float)rand()/(float)RAND_MAX;
-        polygons[i].points[3].y = (float)rand()/(float)RAND_MAX;
-        polygons[i].points[3].z = (float)i/10.0f;
-        polygons[i].color.r = (float)rand()/(float)RAND_MAX;
-        polygons[i].color.g = (float)rand()/(float)RAND_MAX;
-        polygons[i].color.b = (float)rand()/(float)RAND_MAX;
-        polygons[i].color.a = (float)rand()/(float)RAND_MAX;
-
-        num_polygons++;
-    }   
-
-
-	glutInitWindowPosition(100, 100);
-	glutCreateWindow("hello");
-	init();
-	glutDisplayFunc(display);
-	glutMainLoop();	// start rendering
-
-	return 0;	
-}
+//
+//int main(int argc, char** argv){
+//    int i;
+//	glutInit(&argc, argv);
+//	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+//	glutInitWindowSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+//
+//    srand(time(NULL));
+//
+//    //create 3 polygons
+//    for(i=0;i<3;i++) {
+//        polygons[i].num_p = 3;
+//        polygons[i].points[0].x = (float)rand()/(float)RAND_MAX;
+//        polygons[i].points[0].y = (float)rand()/(float)RAND_MAX;
+//        polygons[i].points[0].z = (float)i/10.0f;
+//        polygons[i].points[1].x = (float)rand()/(float)RAND_MAX;
+//        polygons[i].points[1].y = (float)rand()/(float)RAND_MAX;
+//        polygons[i].points[1].z = (float)i/10.0f;
+//        polygons[i].points[2].x = (float)rand()/(float)RAND_MAX;
+//        polygons[i].points[2].y = (float)rand()/(float)RAND_MAX;
+//        polygons[i].points[2].z = (float)i/10.0f;
+//        polygons[i].points[3].x = (float)rand()/(float)RAND_MAX;
+//        polygons[i].points[3].y = (float)rand()/(float)RAND_MAX;
+//        polygons[i].points[3].z = (float)i/10.0f;
+//        polygons[i].color.r = (float)rand()/(float)RAND_MAX;
+//        polygons[i].color.g = (float)rand()/(float)RAND_MAX;
+//        polygons[i].color.b = (float)rand()/(float)RAND_MAX;
+//        polygons[i].color.a = (float)rand()/(float)RAND_MAX;
+//
+//        num_polygons++;
+//    }   
+//
+//
+//	glutInitWindowPosition(100, 100);
+//	glutCreateWindow("hello");
+//	init();
+//	glutDisplayFunc(display);
+//	glutMainLoop();	// start rendering
+//
+//	return 0;	
+//}
