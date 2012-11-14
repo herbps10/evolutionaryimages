@@ -1,11 +1,10 @@
 #!/bin/bash
+# takes output file name as an optional argument
 if [ $1 ]; then
-    if [ "`uname`" == "Darwin" ]; then
-        g++ -o "$1" draw_polygons.cpp algorithm.cpp  -framework GLUT -framework OpenGL -framework Cocoa -O2 -lm -lpthread -L/System/Library/Frameworks/Tk.framework/Versions/8.5/Headers/ -lX11
-    else
-        g++ -o "$1" "$1.cpp" -lglut
-    fi
+    g++ -Wall -o "$1" algorithm.cpp draw_polygons.cpp -lglut
+    exit $?
 else
-    $0 geometric_art 
+    g++ -Wall -o evolution algorithm.cpp draw_polygons.cpp -lglut
+    exit $?
 fi
-exit 0
+exit -1
