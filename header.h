@@ -1,3 +1,6 @@
+#ifndef OUR_HEADER
+#define OUR_HEADER
+
 #define DEFAULT_WIDTH 500
 #define DEFAULT_HEIGHT 500
 #define MAX_POINTS 6 //maximum points per polygon
@@ -21,3 +24,23 @@ typedef struct polygon {
     color4f color;
     vertex3f points[MAX_POINTS];
 } polygon;
+
+class Image
+{
+  float **pixel_buffer;
+  polygon polygons[MAX_POLYGONS];
+  int num_polygons;
+
+  public:
+    Image();
+    void load_from_file(char *);
+    void randomize_polygons();
+    void print();
+    void render();
+    void fitness(Image);
+    void mutate();
+    Image recombine(Image);
+};
+
+
+#endif

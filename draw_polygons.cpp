@@ -11,6 +11,7 @@
 #include <GL/glut.h>
 #endif
 
+Image *test = NULL; //initialized in main(), must be global for display() to see it
 
 int num_polygons = 0;
 polygon polygons[MAX_POLYGONS];
@@ -20,6 +21,30 @@ void display(void){
 
 	//clears the pixels
 	glClear(GL_COLOR_BUFFER_BIT);
+
+    num_polygons=0;
+    /create 3 polygons
+    for(i=0;i<3;i++) {
+        polygons[i].num_p = 3;
+        polygons[i].points[0].x = (float)rand()/(float)RAND_MAX;
+        polygons[i].points[0].y = (float)rand()/(float)RAND_MAX;
+        polygons[i].points[0].z = (float)i/10.0f;
+        polygons[i].points[1].x = (float)rand()/(float)RAND_MAX;
+        polygons[i].points[1].y = (float)rand()/(float)RAND_MAX;
+        polygons[i].points[1].z = (float)i/10.0f;
+        polygons[i].points[2].x = (float)rand()/(float)RAND_MAX;
+        polygons[i].points[2].y = (float)rand()/(float)RAND_MAX;
+        polygons[i].points[2].z = (float)i/10.0f;
+        polygons[i].points[3].x = (float)rand()/(float)RAND_MAX;
+        polygons[i].points[3].y = (float)rand()/(float)RAND_MAX;
+        polygons[i].points[3].z = (float)i/10.0f;
+        polygons[i].color.r = (float)rand()/(float)RAND_MAX;
+        polygons[i].color.g = (float)rand()/(float)RAND_MAX;
+        polygons[i].color.b = (float)rand()/(float)RAND_MAX;
+        polygons[i].color.a = (float)rand()/(float)RAND_MAX;
+
+        num_polygons++;
+    }   
 
 	
 	//draw a polygon	

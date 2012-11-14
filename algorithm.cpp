@@ -11,26 +11,14 @@
 using namespace cimg_library;
 using namespace std;
 
+//in draw_polygons.cpp
+//Image *test = NULL; //initialized in main(), must be global for display() to see it
+
 float rand_one()
 {
   return (float)rand() / (float)RAND_MAX;
 }
 
-class Image
-{
-  float **pixel_buffer;
-  polygon polygons[MAX_POLYGONS];
-
-  public:
-    Image();
-    void load_from_file(char *);
-    void randomize_polygons();
-    void print();
-    void render();
-    void fitness(Image);
-    void mutate();
-    Image recombine(Image);
-};
 
 Image::Image()
 {
@@ -95,9 +83,20 @@ void Image::print()
   }
 }
 
+//called from display()
 void Image::render()
 {
-  
+  for(int poly_index = 0; poly_index < num_polygons; poly_index++)
+  {
+    glColor4fv( (GLfloat*) &polygons[poly_index].color);
+
+    glBegin(GL_POLYGON);
+      for(int vertex_index = 0; vertex_index < polygons[poly_index].num_p ; vertex_index++)
+      {
+        glVertex3fv( (GLfloat*) &polygons[poly_index].points[vertex_index]);
+      }
+    gEnd();
+  }
 }
 
 void Image::fitness(Image target)
@@ -115,15 +114,28 @@ Image Image::recombine(Image second)
 
 }
 
-int main()
+int main(int argc, char** argv)
 {
+  // set up CImg stuff
   Image target;
   target.load_from_file("target-image.jpg");
 
-  Image *test = new Image();
-  test->randomize_polygons();
+  test = new Image();
 
-  test->print();
+  // set up OpenGL
+  glutInit(&argc, argv);
+  glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+  glutInitWindowSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+
+  glutInitWindowPosition(100, 100);
+  glutCreateWindow("hello");
+  init();
+  glutDisplayFunc(display);
+  glutMainLoop();	// start rendering
+
+
+  //test->randomize_polygons();
+  //test->print();
 
   return 0;
 }
