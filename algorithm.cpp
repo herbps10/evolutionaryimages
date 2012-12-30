@@ -13,6 +13,9 @@ using namespace cimg_library;
 using namespace std;
 
 Image *test = NULL; //initialized in main(), must be global for display() to see it
+GLuint rboId;
+GLuint fboId;
+
 
 float rand_one()
 {
@@ -31,17 +34,14 @@ void Image::load_from_file(char *image_path)
 
   
   // Allocate space to the target image buffer
-  pixel_buffer = (float **) malloc(sizeof(float *) * image.width());
-  for(int i = 0; i < image.width(); i++)
-    pixel_buffer[i] = (float *) malloc(sizeof(float) * image.height());
-  
+  image_buffer = (float *) malloc(sizeof(float *) * image.width() * image.height() );
 
   // Copy the CImg data over into the buffer
   for(int x = 0; x < image.width(); x++)
   {
     for(int y = 0; y < image.height(); y++)
     {
-      pixel_buffer[x][y] = image(x, y);
+      image_buffer[x * image.width() + y] = image(x, y);
     }
   } 
 }
@@ -86,7 +86,7 @@ void Image::print()
 //called from display()
 void Image::render()
 {
-    printf("render called\n");
+   // printf("render called\n");
   for(int poly_index = 0; poly_index < MAX_POLYGONS; poly_index++)
   {
     glColor4fv( (GLfloat*) &polygons[poly_index].color);
@@ -120,6 +120,9 @@ void beginGeneticAlgorithm(int value)
 {
     if(value!=1) return;
     printf("This was executed\n");
+    sleep(1); // so I can see the changes. 
+    test->randomize_polygons();
+    display();
 
 }
 
@@ -130,7 +133,7 @@ int main(int argc, char** argv)
 
   // set up CImg stuff
   Image target;
-  target.load_from_file((char*)"target-image.jpg");
+  target.load_from_file( (char*)"target-image.jpg" );
 
   test = new Image();
   test->randomize_polygons();
@@ -144,7 +147,52 @@ int main(int argc, char** argv)
   glutCreateWindow("hello");
   init();
   glutDisplayFunc(display);
-  glutTimerFunc(10, beginGeneticAlgorithm, 1); // start beginGeneticAlgorithm almost immediately 
+
+  // create a texture object
+  GLuint textureId;
+  glGenTextures(1, &textureId);
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0,
+               GL_RGBA, GL_UNSIGNED_BYTE, 0);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  
+  // set up a new frambuffer
+  // *** borrowed from http://www.songho.ca/opengl/gl_fbo.html **
+
+  // create a renderbuffer object to store depth info
+  glGenRenderbuffers(1, &rboId);
+  glBindRenderbuffer(GL_RENDERBUFFER, rboId);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                        DEFAULT_WIDTH, DEFAULT_HEIGHT );
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  
+  // create a framebuffer object
+  glGenFramebuffers(1, &fboId);
+  glBindFramebuffer(GL_FRAMEBUFFER, fboId);
+  
+  // attach the texture to FBO color attachment point
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D, textureId, 0);
+  
+  // attach the renderbuffer to depth attachment point
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                            GL_RENDERBUFFER, rboId);
+  
+  // check FBO status
+  GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  if(status != GL_FRAMEBUFFER_COMPLETE)
+      fprintf(stderr,"problem creating framebuffer object\n");
+  
+  // switch back to window-system-provided framebuffer
+  // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // *** END from songho.ca ***
+
+  glutTimerFunc(2000, beginGeneticAlgorithm, 1); // start beginGeneticAlgorithm almost immediately 
   glutMainLoop();	// start rendering
 
 

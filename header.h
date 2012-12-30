@@ -33,7 +33,7 @@ typedef struct polygon {
 
 class Image
 {
-  float **pixel_buffer;
+  float *image_buffer;
   polygon polygons[MAX_POLYGONS];
   //int num_polygons;
 
