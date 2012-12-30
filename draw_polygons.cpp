@@ -34,10 +34,18 @@ void display(void){
 	glClear(GL_COLOR_BUFFER_BIT);
     test->render();
 
-//    for(int z=0;z<DEFAULT_WIDTH;z++) {
-//        for(int x=0;x<DEFAULT_WIDTH;x++) {
-//            printf("%d\t",fboId
+    //the buffer will contain the pixels in each row from left to right starting with the bottom row
+    glReadPixels(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT, GL_RGB, GL_FLOAT, test->polygon_buffer);
+    
+    //print out the buffer to make sure it's correct
+//    int offset = 0;
+//    for(int z=0;z<DEFAULT_HEIGHT;z++) { // for each row
+//        for(int x=0;x<DEFAULT_WIDTH;x++) { // for each pixel in row z
+//            //printf("%.3f  ", ( test->polygon_buffer[offset] +  test->polygon_buffer[offset+1] +  test->polygon_buffer[offset+2] ) / 3.0f );
+//            printf("(%d,%d) - %.3f %.3f %.3f\n", z, x, test->polygon_buffer[offset], test->polygon_buffer[offset+1], test->polygon_buffer[offset+2]);
+//            offset += 3;
 //        }
+//        putchar('\n');
 //        putchar('\n');
 //    }
 
@@ -66,6 +74,11 @@ void init(void){
     //other stuff
 	//glutReshapeFunc(myReshapeFunc);
 }
+
+
+
+
+
 
 //
 //int main(int argc, char** argv){

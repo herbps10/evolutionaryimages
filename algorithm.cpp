@@ -32,18 +32,28 @@ void Image::load_from_file(char *image_path)
 {
   CImg<float> image(image_path);
 
-  
   // Allocate space to the target image buffer
-  image_buffer = (float *) malloc(sizeof(float *) * image.width() * image.height() );
+  // needs to be updated to accomodate return type of image(x,y)
+  image_buffer = (float *) malloc(sizeof(float) * image.width() * image.height() );
+  if( image_buffer == NULL )
+    fprintf(stderr, "error malloc-ing image_buffer\n");
 
   // Copy the CImg data over into the buffer
-  for(int x = 0; x < image.width(); x++)
+  for(int x = 0; x < image.height(); x++) // for each row
   {
-    for(int y = 0; y < image.height(); y++)
+    for(int y = 0; y < image.width(); y++) // for each pixel in row x
     {
       image_buffer[x * image.width() + y] = image(x, y);
     }
   } 
+
+  // Allocate space for the polygon_buffer
+  // NOTE: image_buffer and polygon_buffer may not be the same size. Either we'll have to adjust that here or we'll have to write a fitness function that is aware of this
+  // do not change the size of this buffer without making appropriate changes in display()
+  polygon_buffer = (float*)malloc(sizeof(float) * DEFAULT_WIDTH * DEFAULT_HEIGHT * 3);
+  if( polygon_buffer == NULL )
+    fprintf(stderr, "error malloc-ing polygon_buffer\n");
+
 }
 
 void Image::randomize_polygons()
@@ -121,6 +131,7 @@ void beginGeneticAlgorithm(int value)
     if(value!=1) return;
     printf("This was executed\n");
     sleep(1); // so I can see the changes. 
+    printf("\n******************************************************************\n\n\n\n\n\n");
     test->randomize_polygons();
     display();
 
@@ -132,10 +143,11 @@ int main(int argc, char** argv)
   srandom((unsigned int)time(NULL));
 
   // set up CImg stuff
-  Image target;
-  target.load_from_file( (char*)"target-image.jpg" );
+  //Image target;
+  //target.load_from_file( (char*)"target-image.jpg" );
 
   test = new Image();
+  test->load_from_file( (char*)"target-image.jpg" );
   test->randomize_polygons();
 
   // set up OpenGL

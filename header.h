@@ -33,11 +33,14 @@ typedef struct polygon {
 
 class Image
 {
+  //I moved public: to the top for debugging purposes
+  public:
   float *image_buffer;
+  float *polygon_buffer;
   polygon polygons[MAX_POLYGONS];
   //int num_polygons;
 
-  public:
+  //public:
     Image();
     void load_from_file(char *);
     void randomize_polygons();
