@@ -19,7 +19,47 @@ GLuint fboId;
 
 float rand_one()
 {
+#if defined(__MACOSX__) || defined(__APPLE__)
+  return (float)((double)arc4random() / (double)4294967295); // largest value is 2^32-1 (roughly double RAND_MAX)
+#else
   return (float)random() / (float)RAND_MAX;
+#endif
+}
+
+// assumes image_buffer and buffer are the same size
+double Image::sumOfError(float *buffer, int height, int width){
+    int i;
+    double error = 0.0;
+
+    if( height != DEFAULT_HEIGHT || width != DEFAULT_WIDTH ) {
+        fprintf(stderr, "sumOfError: buffers are not the same size.\n");
+        return -1.0;
+    }
+
+    for(i=0;i<DEFAULT_HEIGHT*DEFAULT_WIDTH*3;i++) {
+        error += image_buffer[i] < buffer[i] ? buffer[i] - image_buffer[i] : image_buffer[i] - buffer[i];
+    }
+    
+    return error;
+}
+
+
+// assumes image_buffer and buffer are the same size
+double Image::sumOfSquaresError(float *buffer, int height, int width){
+    int i;
+    double error = 0.0, diff;
+
+    if( height != DEFAULT_HEIGHT || width != DEFAULT_WIDTH ) {
+        fprintf(stderr, "sumOfSquaresError: buffers are not the same size.\n");
+        return -1.0;
+    }
+
+    for(i=0;i<DEFAULT_HEIGHT*DEFAULT_WIDTH*3;i++) {
+        diff = image_buffer[i] - buffer[i];
+        error += diff*diff;
+    }
+    
+    return error;
 }
 
 
@@ -31,21 +71,31 @@ Image::Image()
 void Image::load_from_file(char *image_path)
 {
   CImg<float> image(image_path);
+  int i = 0;
 
   // Allocate space to the target image buffer
-  // needs to be updated to accomodate return type of image(x,y)
-  image_buffer = (float *) malloc(sizeof(float) * image.width() * image.height() );
+  image_buffer = (float *) malloc(sizeof(float) * image.width() * image.height() * 3);
   if( image_buffer == NULL )
     fprintf(stderr, "error malloc-ing image_buffer\n");
 
   // Copy the CImg data over into the buffer
-  for(int x = 0; x < image.height(); x++) // for each row
+  for(int y = image.height() - 1; y >= 0; y--) // for each row bottom to top (to allign with OpenGl getPixelValues(...))
   {
-    for(int y = 0; y < image.width(); y++) // for each pixel in row x
+    for(int x = 0; x < image.width(); x++) // for each pixel in row x
     {
-      image_buffer[x * image.width() + y] = image(x, y);
+      image_buffer[i++] = image(x, y, 0, 0); // red component
+      image_buffer[i++] = image(x, y, 0, 1); // green component
+      image_buffer[i++] = image(x, y, 0, 2); // blue component 
     }
   } 
+
+//  i=0;
+//  printf("%d components\n", image.spectrum());
+//  for(int j=0;j<3*image.width()*image.height();j+=3) {
+//    printf("(%d,%d) - %f %f %f\n", i/image.width(), i%image.width(), image_buffer[j], image_buffer[j+1], image_buffer[j+2] );
+//    i++;
+//  }
+  //image.display();
 
   // Allocate space for the polygon_buffer
   // NOTE: image_buffer and polygon_buffer may not be the same size. Either we'll have to adjust that here or we'll have to write a fitness function that is aware of this
@@ -131,7 +181,6 @@ void beginGeneticAlgorithm(int value)
     if(value!=1) return;
     printf("This was executed\n");
     sleep(1); // so I can see the changes. 
-    printf("\n******************************************************************\n\n\n\n\n\n");
     test->randomize_polygons();
     display();
 
@@ -147,8 +196,8 @@ int main(int argc, char** argv)
   //target.load_from_file( (char*)"target-image.jpg" );
 
   test = new Image();
-  test->load_from_file( (char*)"target-image.jpg" );
-  test->randomize_polygons();
+  test->load_from_file( (char*)"test.gif" );
+  //test->randomize_polygons();
 
   // set up OpenGL
   glutInit(&argc, argv);
@@ -160,51 +209,12 @@ int main(int argc, char** argv)
   init();
   glutDisplayFunc(display);
 
-  // create a texture object
-  GLuint textureId;
-  glGenTextures(1, &textureId);
-  glBindTexture(GL_TEXTURE_2D, textureId);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0,
-               GL_RGBA, GL_UNSIGNED_BYTE, 0);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  
-  // set up a new frambuffer
-  // *** borrowed from http://www.songho.ca/opengl/gl_fbo.html **
-
-  // create a renderbuffer object to store depth info
-  glGenRenderbuffers(1, &rboId);
-  glBindRenderbuffer(GL_RENDERBUFFER, rboId);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
-                        DEFAULT_WIDTH, DEFAULT_HEIGHT );
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-  
-  // create a framebuffer object
-  glGenFramebuffers(1, &fboId);
-  glBindFramebuffer(GL_FRAMEBUFFER, fboId);
-  
-  // attach the texture to FBO color attachment point
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                         GL_TEXTURE_2D, textureId, 0);
-  
-  // attach the renderbuffer to depth attachment point
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                            GL_RENDERBUFFER, rboId);
-  
-  // check FBO status
-  GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  if(status != GL_FRAMEBUFFER_COMPLETE)
-      fprintf(stderr,"problem creating framebuffer object\n");
-  
+   
   // switch back to window-system-provided framebuffer
   // glBindFramebuffer(GL_FRAMEBUFFER, 0);
   // *** END from songho.ca ***
 
-  glutTimerFunc(2000, beginGeneticAlgorithm, 1); // start beginGeneticAlgorithm almost immediately 
+  glutTimerFunc(20, beginGeneticAlgorithm, 1); // start beginGeneticAlgorithm almost immediately 
   glutMainLoop();	// start rendering
 
 

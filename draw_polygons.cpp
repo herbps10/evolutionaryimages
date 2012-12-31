@@ -8,6 +8,9 @@
 
 extern Image *test; //initialized in main(), must be global for display() to see it
 extern GLuint fboId;
+extern GLuint rboId;
+bool firstCallToDisplay = true; //used to prevent display() from being called at start up
+
 
 //int num_polygons = 0;
 //polygon polygons[MAX_POLYGONS];
@@ -23,6 +26,11 @@ int timer_value = 0;
 
 
 void display(void){
+    if(firstCallToDisplay){
+        firstCallToDisplay = false;
+        return;
+    }
+
     //int i,j;
     printf("display\n");
 
@@ -70,6 +78,49 @@ void init(void){
 	glOrtho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 2.0f); // top left is (0,0) displays depths between -1 and 2
     glEnable(GL_BLEND); //required for transperency
     glBlendFunc(GL_ONE,GL_ONE);
+
+    // set up a new frambuffer
+    // *** borrowed from http://www.songho.ca/opengl/gl_fbo.html **
+  
+     // create a texture object
+    GLuint textureId;
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, DEFAULT_WIDTH, DEFAULT_HEIGHT, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    // create a renderbuffer object to store depth info
+    glGenRenderbuffers(1, &rboId);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboId);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                          DEFAULT_WIDTH, DEFAULT_HEIGHT );
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    
+    // create a framebuffer object
+    glGenFramebuffers(1, &fboId);
+    glBindFramebuffer(GL_FRAMEBUFFER, fboId);
+    
+    // attach the texture to FBO color attachment point
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D, textureId, 0);
+    
+    // attach the renderbuffer to depth attachment point
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                              GL_RENDERBUFFER, rboId);
+    
+    // check FBO status
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if(status != GL_FRAMEBUFFER_COMPLETE)
+        fprintf(stderr,"problem creating framebuffer object\n");
+  
+
+
 
     //other stuff
 	//glutReshapeFunc(myReshapeFunc);

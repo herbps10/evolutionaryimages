@@ -38,7 +38,9 @@ class Image
   float *image_buffer;
   float *polygon_buffer;
   polygon polygons[MAX_POLYGONS];
-  //int num_polygons;
+  // private error calculating functions to be called by fitness
+  double sumOfError(float *buffer, int height, int width); // compares buffer to image_buffer and sums the error
+  double sumOfSquaresError(float *buffer, int height, int width); // compares buffer to image_buffer and sums the square of the error
 
   //public:
     Image();
