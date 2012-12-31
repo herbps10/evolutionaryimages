@@ -77,7 +77,7 @@ void init(void){
 	glLoadIdentity();
 	glOrtho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 2.0f); // top left is (0,0) displays depths between -1 and 2
     glEnable(GL_BLEND); //required for transperency
-    glBlendFunc(GL_ONE,GL_ONE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // set up a new frambuffer
     // *** borrowed from http://www.songho.ca/opengl/gl_fbo.html **
