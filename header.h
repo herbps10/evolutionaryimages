@@ -7,12 +7,13 @@
 #include <GL/glut.h>
 #endif
 
-#define GENERATIONS 100
-#define POPULATION_SIZE 100
-#define MUTATION_PR 0.5
+#define GENERATIONS 1000
+#define POPULATION_SIZE 1000
+#define MUTATION_PR 0.1
+#define MUTATION_SPREAD 5
 
-#define DEFAULT_WIDTH 500
-#define DEFAULT_HEIGHT 500
+#define DEFAULT_WIDTH 10
+#define DEFAULT_HEIGHT 10
 #define MAX_POINTS 3 //maximum points per polygon
 #define MAX_POLYGONS 10
 

@@ -26,8 +26,9 @@ double Image::sumOfSquaresError(float *buffer, int height, int width){
         return -1.0;
     }
 
-    for(i = 0; i < (DEFAULT_HEIGHT / 4) * (DEFAULT_WIDTH / 4) * 3; i++) {
+    for(i = 0; i < DEFAULT_HEIGHT * DEFAULT_WIDTH * 3; i++) {
         diff = image_buffer[i] - buffer[i];
+
         error += diff*diff;
     }
     
@@ -72,6 +73,10 @@ void Image::load_from_cimg(CImg<float> image)
   }
 }
 
+void Image::print_pixel(int x, int y)
+{
+	cout << '(' << image_buffer[3*x] << ',' << image_buffer[3*x+1] << ',' << image_buffer[3*x+2] << ')' << endl;
+}
 
 void Image::load_from_file(char *image_path)
 {
@@ -88,6 +93,25 @@ void Image::load_from_file(char *image_path)
   //image.display();
 
   }
+
+void Image::randomize_pixels()
+{
+	if(image_buffer == NULL)
+	{
+  		image_buffer = (float *) malloc(sizeof(float) * DEFAULT_WIDTH * DEFAULT_HEIGHT * 3);
+	}
+
+	int i = 0;
+	for(int x = 0; x < DEFAULT_WIDTH; x++)
+	{
+		for(int y = 0; y < DEFAULT_HEIGHT; y++)
+		{
+			image_buffer[i++] = (float)rand_one() * 255;
+			image_buffer[i++] = (float)rand_one() * 255;
+			image_buffer[i++] = (float)rand_one() * 255;
+		}
+	}
+}
 
 void Image::randomize_polygons()
 {
@@ -179,6 +203,27 @@ void Image::render_cimg(bool save, char *filename)
 	load_from_cimg(render_image);
 }
 
+void Image::save(char *filename)
+{
+
+	CImg<float> render_image(DEFAULT_WIDTH, DEFAULT_HEIGHT, 1, 3);
+
+	int i = 0;
+	for(int x = 0; x < DEFAULT_WIDTH; x++)
+	{
+		for(int y = 0; y < DEFAULT_HEIGHT; y++)
+		{
+			const unsigned char color[] = { (char)image_buffer[i * 3], (char)image_buffer[i * 3 + 1], (char)image_buffer[i * 3 + 2] };
+
+			render_image.draw_point(x, y, color);
+
+			i++;
+		}
+	}
+
+	render_image.save(filename);
+}
+
 void Image::calculate_fitness(Image target)
 {
 	fitness = sumOfSquaresError(target.image_buffer, DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -211,6 +256,80 @@ void Image::mutate()
 			if(polygons[i].color.r > 1) polygons[i].color.a = 1;
 			if(polygons[i].color.g > 1) polygons[i].color.g = 1;
 			if(polygons[i].color.b > 1) polygons[i].color.b = 1;
+		}
+	}
+}
+
+void Image::mutate_pixels()
+{
+	int i = 0;
+	for(int x = 0; x < DEFAULT_WIDTH; x++)
+	{
+		for(int y = 0; y < DEFAULT_HEIGHT; y++)
+		{
+			if(rand_one() < MUTATION_PR)
+			{
+				image_buffer[i * 3] += rand_one() * MUTATION_SPREAD - (MUTATION_SPREAD / 2);
+				image_buffer[i * 3 + 1] += rand_one() * MUTATION_SPREAD - (MUTATION_SPREAD / 2); 
+				image_buffer[i * 3 + 2] += rand_one() * MUTATION_SPREAD - (MUTATION_SPREAD / 2);
+
+				if(image_buffer[i * 3] > 255) image_buffer[i * 3] = 255;
+				if(image_buffer[i * 3 + 1] > 255) image_buffer[i * 3 + 1] = 255;
+				if(image_buffer[i * 3 + 2] > 255) image_buffer[i * 3 + 2] = 255;
+
+				if(image_buffer[i * 3] < 0) image_buffer[i * 3] = 0;
+				if(image_buffer[i * 3 + 1] < 0) image_buffer[i * 3 + 1] = 0;
+				if(image_buffer[i * 3 + 2] < 0) image_buffer[i * 3 + 2] = 0;
+			}
+
+			i++;
+		}
+	}
+}
+
+void Image::set_color(float r, float g, float b)
+{
+
+	if(image_buffer == NULL)
+	{
+  		image_buffer = (float *) malloc(sizeof(float) * DEFAULT_WIDTH * DEFAULT_HEIGHT * 3);
+	}
+
+	int i = 0;
+	for(int x = 0; x < DEFAULT_WIDTH; x++)
+	{
+		for(int y = 0; y < DEFAULT_HEIGHT; y++)
+		{
+			image_buffer[i * 3] = 255;
+			image_buffer[i * 3 + 1] = 255;
+			image_buffer[i * 3 + 2] = 255;
+
+			i++;
+		}
+	}
+}
+
+void Image::recombine_pixels(Image first, Image second)
+{
+	int i = 0;
+	for(int x = 0; x < DEFAULT_WIDTH; x++)
+	{
+		for(int y = 0; y < DEFAULT_HEIGHT; y++)
+		{
+			if(rand_one() < 0.5)
+			{
+				image_buffer[i * 3] = first.image_buffer[i * 3];
+				image_buffer[i * 3 + 1] = first.image_buffer[i * 3 + 1];
+				image_buffer[i * 3 + 2] = first.image_buffer[i * 3 + 2];
+			}
+			else
+			{
+				image_buffer[i * 3] = second.image_buffer[i * 3];
+				image_buffer[i * 3 + 1] = second.image_buffer[i * 3 + 1];
+				image_buffer[i * 3 + 2] = second.image_buffer[i * 3 + 2];
+			}
+
+			i++;
 		}
 	}
 }

@@ -12,9 +12,11 @@ class Image
 
   //public:
     Image();
+    void print_pixel(int, int);
     void load_from_cimg(CImg<float>);
     void load_from_file(char *);
     void randomize_polygons();
+    void randomize_pixels();
     void allocate_polygons();
     void print();
     void render();
@@ -22,4 +24,8 @@ class Image
     void calculate_fitness(Image);
     void mutate();
     Image* recombine(Image);
+    void recombine_pixels(Image, Image);
+    void mutate_pixels();
+    void set_color(float r, float g, float b);
+    void save(char *);
 };
