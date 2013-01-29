@@ -7,10 +7,14 @@
 #include <GL/glut.h>
 #endif
 
+#define GENERATIONS 100
+#define POPULATION_SIZE 100
+#define MUTATION_PR 0.5
+
 #define DEFAULT_WIDTH 500
 #define DEFAULT_HEIGHT 500
-#define MAX_POINTS 6 //maximum points per polygon
-#define MAX_POLYGONS 5
+#define MAX_POINTS 3 //maximum points per polygon
+#define MAX_POLYGONS 10
 
 typedef struct vertex3f {
     float x;
@@ -30,28 +34,6 @@ typedef struct polygon {
     color4f color;
     vertex3f points[MAX_POINTS];
 } polygon;
-
-class Image
-{
-  //I moved public: to the top for debugging purposes
-  public:
-  float *image_buffer;
-  float *polygon_buffer;
-  polygon polygons[MAX_POLYGONS];
-  // private error calculating functions to be called by fitness
-  double sumOfError(float *buffer, int height, int width); // compares buffer to image_buffer and sums the error
-  double sumOfSquaresError(float *buffer, int height, int width); // compares buffer to image_buffer and sums the square of the error
-
-  //public:
-    Image();
-    void load_from_file(char *);
-    void randomize_polygons();
-    void print();
-    void render();
-    void fitness(Image);
-    void mutate();
-    Image* recombine(Image);
-};
 
 //function declarations from draw_polygons.cpp
 //void timer_callback(int value);
