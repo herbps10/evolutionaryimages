@@ -38,8 +38,6 @@ int main(int argc, char** argv)
 
 	//target->load_from_file("target.bmp");
 
-	int elitism = 10;
-
 	target->randomize_pixels();
 	//target->set_color(255, 0, 0);
 
@@ -47,52 +45,68 @@ int main(int argc, char** argv)
 	target->print_pixel(0, 0);
 	cout << endl;
 
-	Image *population[POPULATION_SIZE];
+	Image *population[1000];
+
+	int elitism = 10;
+
+	FILE *stats = fopen("population_size_test.csv", "w");
+	fprintf(stats, "population_size, fitness\n");
 
 	// Generate initial population
-	for(int i = 0; i < POPULATION_SIZE; i++)
+	for(POPULATION_SIZE = 50; POPULATION_SIZE <= 1000; POPULATION_SIZE += 50)
 	{
-		cout << i << " " << population[i] << endl;
-		population[i] = new Image();
-		population[i]->randomize_pixels();
+		for(int rep = 0; rep < 10; rep++)
+		{
+			for(int i = 0; i < POPULATION_SIZE; i++)
+			{
+				cout << i << " " << population[i] << endl;
+				population[i] = new Image();
+				population[i]->randomize_pixels();
 
-		population[i]->print_pixel(0, 0);
+				population[i]->print_pixel(0, 0);
 
-		population[i]->calculate_fitness(*target);
+				population[i]->calculate_fitness(*target);
 
-		cout << population[i]->fitness << endl << endl;
+				cout << population[i]->fitness << endl << endl;
 
-		//population[i]->randomize_polygons();
+				//population[i]->randomize_polygons();
+			}
+			
+			for(int generation = 0; generation < GENERATIONS; generation++)
+			{
+				for(int i = 0; i < POPULATION_SIZE; i++)
+				{
+					//population[i]->render_cimg(false, "");
+					population[i]->calculate_fitness(*target);
+				}
+
+			
+				sort(population, population + POPULATION_SIZE, compare);
+
+				for(int i = elitism; i < POPULATION_SIZE; i++)
+				{
+					int i1 = random() / RAND_MAX * elitism;
+					int i2 = random() / RAND_MAX * elitism;
+
+					//population[i1]->recombine(*population[i2]);
+					population[i]->recombine_pixels(*population[i1], *population[i2]);
+					population[i]->mutate_pixels();
+					//population[i]->mutate();
+				}
+				
+				if(generation % 10 == 0)
+				{
+					cout << "Generation: " << generation << " " << population[0]->fitness << endl;
+				}
+			}
+
+			fprintf(stats, "%i, %f\n", POPULATION_SIZE, population[0]->fitness);
+			fflush(stats);
+		}
 	}
+
+	fclose(stats);
 	
-	for(int generation = 0; generation < GENERATIONS; generation++)
-	{
-		for(int i = 0; i < POPULATION_SIZE; i++)
-		{
-			//population[i]->render_cimg(false, "");
-			population[i]->calculate_fitness(*target);
-		}
-
-	
-		sort(population, population + POPULATION_SIZE, compare);
-
-		for(int i = elitism; i < POPULATION_SIZE; i++)
-		{
-			int i1 = random() / RAND_MAX * elitism;
-			int i2 = random() / RAND_MAX * elitism;
-
-			//population[i1]->recombine(*population[i2]);
-			population[i]->recombine_pixels(*population[i1], *population[i2]);
-			population[i]->mutate_pixels();
-			//population[i]->mutate();
-		}
-		
-		if(generation % 10 == 0)
-		{
-			cout << "Generation: " << generation << " " << population[0]->fitness << endl;
-		}
-	}
-
 	cout << population[0]->fitness << endl;
 
 	population[0]->save("best.bmp");
