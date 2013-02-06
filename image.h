@@ -12,6 +12,7 @@ class Image
 
   //public:
     Image();
+    ~Image();
     void print_pixel(int, int);
     void load_from_cimg(CImg<float>);
     void load_from_file(char *);
@@ -21,10 +22,10 @@ class Image
     void print();
     void render();
     void render_cimg(bool, char *);
-    void calculate_fitness(Image);
+    void calculate_fitness(Image*);
     void mutate();
-    Image* recombine(Image);
-    void recombine_pixels(Image, Image);
+    Image* recombine(Image*);
+    void recombine_pixels(Image*, Image*);
     void mutate_pixels();
     void set_color(float r, float g, float b);
     void save(char *);

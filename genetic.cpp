@@ -11,7 +11,7 @@
 using namespace std;
 using namespace cimg_library;
 
-float rand_one()
+inline float rand_one()
 {
 #if defined(__MACOSX__) || defined(__APPLE__)
   return (float)((double)arc4random() / (double)4294967295); // largest value is 2^32-1 (roughly double RAND_MAX)
@@ -20,10 +20,10 @@ float rand_one()
 #endif
 }
 
-
 #include "header.h"
 #include "image.h"
-#include "image.c"
+#include "image.cpp"
+
 
 int compare(Image *a, Image *b)
 {
@@ -57,6 +57,7 @@ int main(int argc, char** argv)
 	{
 		for(int rep = 0; rep < 10; rep++)
 		{
+            // generate the population
 			for(int i = 0; i < POPULATION_SIZE; i++)
 			{
 				cout << i << " " << population[i] << endl;
@@ -65,7 +66,8 @@ int main(int argc, char** argv)
 
 				population[i]->print_pixel(0, 0);
 
-				population[i]->calculate_fitness(*target);
+				//population[i]->calculate_fitness(*target); //this allocates a new object and then passes it by value every time
+				population[i]->calculate_fitness(target); 
 
 				cout << population[i]->fitness << endl << endl;
 
@@ -77,7 +79,8 @@ int main(int argc, char** argv)
 				for(int i = 0; i < POPULATION_SIZE; i++)
 				{
 					//population[i]->render_cimg(false, "");
-					population[i]->calculate_fitness(*target);
+					//population[i]->calculate_fitness(*target);
+				    population[i]->calculate_fitness(target); 
 				}
 
 			
@@ -87,9 +90,14 @@ int main(int argc, char** argv)
 				{
 					int i1 = random() / RAND_MAX * elitism;
 					int i2 = random() / RAND_MAX * elitism;
+                    //fprintf(stderr, "    Herb: i1 is %d and i2 is %d\n", i1, i2);
+                    
+                    // did you mean?
+                    i1 = (int)(rand_one() * (float)elitism);
+                    i2 = (int)(rand_one() * (float)elitism);
 
 					//population[i1]->recombine(*population[i2]);
-					population[i]->recombine_pixels(*population[i1], *population[i2]);
+					population[i]->recombine_pixels(population[i1], population[i2]);
 					population[i]->mutate_pixels();
 					//population[i]->mutate();
 				}
@@ -102,6 +110,11 @@ int main(int argc, char** argv)
 
 			fprintf(stats, "%i, %f\n", POPULATION_SIZE, population[0]->fitness);
 			fflush(stats);
+
+            //reclaim memory
+            for(int i =0; i < POPULATION_SIZE; i++) {
+                delete(population[i]);
+            }
 		}
 	}
 
@@ -109,8 +122,8 @@ int main(int argc, char** argv)
 	
 	cout << population[0]->fitness << endl;
 
-	population[0]->save("best.bmp");
-	target->save("target.bmp");
+	population[0]->save((char*)"best.bmp");
+	target->save((char*)"target.bmp");
 
 	return 0;
 }

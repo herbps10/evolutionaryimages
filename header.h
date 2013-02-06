@@ -7,6 +7,8 @@
 #include <GL/glut.h>
 #endif
 
+#include "CImg.h"
+
 #define GENERATIONS 1000
 #define MUTATION_PR 0.1
 #define MUTATION_SPREAD 5

@@ -38,8 +38,15 @@ double Image::sumOfSquaresError(float *buffer, int height, int width){
 
 Image::Image()
 {
-};
+    image_buffer = NULL;
+    polygon_buffer = NULL;
+}
 
+Image::~Image() {
+    printf("destructor called\n");
+    free(image_buffer);
+    free(polygon_buffer);
+}
 
 void Image::allocate_polygons()
 {
@@ -213,7 +220,7 @@ void Image::save(char *filename)
 	{
 		for(int y = 0; y < DEFAULT_HEIGHT; y++)
 		{
-			const unsigned char color[] = { (char)image_buffer[i * 3], (char)image_buffer[i * 3 + 1], (char)image_buffer[i * 3 + 2] };
+			const unsigned char color[] = { (const unsigned char)image_buffer[i * 3], (const unsigned char)image_buffer[i * 3 + 1], (const unsigned char)image_buffer[i * 3 + 2] };
 
 			render_image.draw_point(x, y, color);
 
@@ -224,9 +231,9 @@ void Image::save(char *filename)
 	render_image.save(filename);
 }
 
-void Image::calculate_fitness(Image target)
+void Image::calculate_fitness(Image * target)
 {
-	fitness = sumOfSquaresError(target.image_buffer, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+	fitness = sumOfSquaresError(target->image_buffer, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 }
 
 void Image::mutate()
@@ -309,7 +316,7 @@ void Image::set_color(float r, float g, float b)
 	}
 }
 
-void Image::recombine_pixels(Image first, Image second)
+void Image::recombine_pixels(Image* first, Image* second)
 {
 	int i = 0;
 	for(int x = 0; x < DEFAULT_WIDTH; x++)
@@ -318,15 +325,15 @@ void Image::recombine_pixels(Image first, Image second)
 		{
 			if(rand_one() < 0.5)
 			{
-				image_buffer[i * 3] = first.image_buffer[i * 3];
-				image_buffer[i * 3 + 1] = first.image_buffer[i * 3 + 1];
-				image_buffer[i * 3 + 2] = first.image_buffer[i * 3 + 2];
+				image_buffer[i * 3] = first->image_buffer[i * 3];
+				image_buffer[i * 3 + 1] = first->image_buffer[i * 3 + 1];
+				image_buffer[i * 3 + 2] = first->image_buffer[i * 3 + 2];
 			}
 			else
 			{
-				image_buffer[i * 3] = second.image_buffer[i * 3];
-				image_buffer[i * 3 + 1] = second.image_buffer[i * 3 + 1];
-				image_buffer[i * 3 + 2] = second.image_buffer[i * 3 + 2];
+				image_buffer[i * 3] = second->image_buffer[i * 3];
+				image_buffer[i * 3 + 1] = second->image_buffer[i * 3 + 1];
+				image_buffer[i * 3 + 2] = second->image_buffer[i * 3 + 2];
 			}
 
 			i++;
@@ -334,7 +341,7 @@ void Image::recombine_pixels(Image first, Image second)
 	}
 }
 
-Image* Image::recombine(Image second)
+Image* Image::recombine(Image* second)
 {
 	Image *result = new Image();
 	
@@ -346,10 +353,10 @@ Image* Image::recombine(Image second)
 			result->polygons[i].points[j].y = polygons[i].points[j].y;
 		}
 		
-		result->polygons[i].color.r = second.polygons[i].color.r;
-		result->polygons[i].color.g = second.polygons[i].color.g;
-		result->polygons[i].color.b = second.polygons[i].color.b;
-		result->polygons[i].color.a = second.polygons[i].color.a;
+		result->polygons[i].color.r = second->polygons[i].color.r;
+		result->polygons[i].color.g = second->polygons[i].color.g;
+		result->polygons[i].color.b = second->polygons[i].color.b;
+		result->polygons[i].color.a = second->polygons[i].color.a;
 	}   
 	
 	return result;
