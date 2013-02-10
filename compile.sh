@@ -9,7 +9,7 @@ if [ `uname` == Darwin ]; then
     exit $?
 else
     #g++ -Wall -o evolution algorithm.cpp draw_polygons.cpp -lglut
-    g++ -Wall -o genetic genetic.cpp -g
+    g++ -Wall -o genetic genetic.cpp -lX11 -lpthread -lglut -g
     exit $?
 fi
 exit -1

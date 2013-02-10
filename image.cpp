@@ -31,6 +31,9 @@ double Image::sumOfSquaresError(float *buffer, int height, int width){
 
         error += diff*diff;
     }
+
+    // Normalize to [0, 1]
+    error = error / (3 * 255 * DEFAULT_HEIGHT * DEFAULT_WIDTH);
     
     return error;
 }
@@ -43,7 +46,6 @@ Image::Image()
 }
 
 Image::~Image() {
-    printf("destructor called\n");
     free(image_buffer);
     free(polygon_buffer);
 }
@@ -57,17 +59,25 @@ void Image::allocate_polygons()
   if( polygon_buffer == NULL )
     fprintf(stderr, "error malloc-ing polygon_buffer\n");
 }
+
+void Image::allocate_image_buffer(int width, int height)
+{
+  if(image_buffer == NULL)
+  {
+    // Allocate space to the target image buffer
+    image_buffer = (float *) malloc(sizeof(float) * width * height * 3);
+    if( image_buffer == NULL )
+      fprintf(stderr, "error malloc-ing image_buffer\n");
+  }
+}
   
 
 void Image::load_from_cimg(CImg<float> image)
 {
   int i = 0;
 
-  // Allocate space to the target image buffer
-  image_buffer = (float *) malloc(sizeof(float) * image.width() * image.height() * 3);
-  if( image_buffer == NULL )
-    fprintf(stderr, "error malloc-ing image_buffer\n");
-
+  allocate_image_buffer(image.width(), image.height());
+  
   // Copy the CImg data over into the buffer
   for(int y = image.height() - 1; y >= 0; y--) // for each row bottom to top (to allign with OpenGl getPixelValues(...))
   {
@@ -103,10 +113,7 @@ void Image::load_from_file(char *image_path)
 
 void Image::randomize_pixels()
 {
-	if(image_buffer == NULL)
-	{
-  		image_buffer = (float *) malloc(sizeof(float) * DEFAULT_WIDTH * DEFAULT_HEIGHT * 3);
-	}
+  allocate_image_buffer(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
 	int i = 0;
 	for(int x = 0; x < DEFAULT_WIDTH; x++)
@@ -296,11 +303,7 @@ void Image::mutate_pixels()
 
 void Image::set_color(float r, float g, float b)
 {
-
-	if(image_buffer == NULL)
-	{
-  		image_buffer = (float *) malloc(sizeof(float) * DEFAULT_WIDTH * DEFAULT_HEIGHT * 3);
-	}
+  allocate_image_buffer(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
 	int i = 0;
 	for(int x = 0; x < DEFAULT_WIDTH; x++)
@@ -362,3 +365,35 @@ Image* Image::recombine(Image* second)
 	return result;
    
 }
+
+bool pointInTriangle(polygon *triangle, float x, float y)
+{
+  float y1 = triangle->points[0].y;
+  float y2 = triangle->points[1].y;
+  float y3 = triangle->points[2].y;
+
+  float x1 = triangle->points[0].x;
+  float x2 = triangle->points[1].x;
+  float x3 = triangle->points[2].x;
+
+  float lambda[3];
+
+  //Convert to barycentric coordinate system
+  lambda[0] = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / ((y2 - y3)*(x1 - x3) + (x3 - x2) * (y1 - y3));
+
+  lambda[1] = ((y3 - y1)*(x - x3) + (x1 - x3)*(y-y3)) / ((y2 - y3)*(x1-x3) + (x3 - x2)*(y1 - y3));
+
+  lambda[2] = 1 - lambda[0] - lambda[1];
+
+  // If lambda 1, 2, and 3 are between 0 and 1, then the point x,y is in the triangle
+
+  for(int i = 0; i < 3; i++)
+  {
+    if(lambda[i] < 0 || lambda[i] > 1)
+    {
+      return false;
+    }
+  }
+
+  return true;
+};

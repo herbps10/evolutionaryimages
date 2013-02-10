@@ -19,6 +19,7 @@ class Image
     void randomize_polygons();
     void randomize_pixels();
     void allocate_polygons();
+    void allocate_image_buffer(int, int);
     void print();
     void render();
     void render_cimg(bool, char *);

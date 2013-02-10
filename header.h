@@ -9,16 +9,16 @@
 
 #include "CImg.h"
 
-#define GENERATIONS 1000
+#define GENERATIONS 500000
 #define MUTATION_PR 0.1
 #define MUTATION_SPREAD 5
 
-#define DEFAULT_WIDTH 10
-#define DEFAULT_HEIGHT 10
+#define DEFAULT_WIDTH 20
+#define DEFAULT_HEIGHT 20
 #define MAX_POINTS 3 //maximum points per polygon
 #define MAX_POLYGONS 10
 
-int POPULATION_SIZE = 1000;
+#define POPULATION_SIZE 100
 
 typedef struct vertex3f {
     float x;
