@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
 	Image *target = new Image();
 
-	target->load_from_file("target.bmp");
+	target->load_from_file((char*)"target.bmp");
 
 	//target->randomize_pixels();
 	//target->set_color(255, 0, 0);

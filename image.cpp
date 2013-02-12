@@ -383,7 +383,7 @@ bool pointInTriangle(polygon *triangle, float x, float y)
 
   lambda[1] = ((y3 - y1)*(x - x3) + (x1 - x3)*(y-y3)) / ((y2 - y3)*(x1-x3) + (x3 - x2)*(y1 - y3));
 
-  lambda[2] = 1 - lambda[0] - lambda[1];
+  lambda[2] = 1.0f - lambda[0] - lambda[1];
 
   // If lambda 1, 2, and 3 are between 0 and 1, then the point x,y is in the triangle
 
