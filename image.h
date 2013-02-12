@@ -13,21 +13,36 @@ class Image
   //public:
     Image();
     ~Image();
-    void print_pixel(int, int);
+    
+    // Loader functions
     void load_from_cimg(CImg<float>);
     void load_from_file(char *);
+
+    // Randomization
     void randomize_polygons();
     void randomize_pixels();
+
+    // Memory allocatio
     void allocate_polygons();
     void allocate_image_buffer(int, int);
-    void print();
-    void render();
+
+    // Render functions
+    void render_scanline();
+    void render_opengl();
     void render_cimg(bool, char *);
+
     void calculate_fitness(Image*);
-    void mutate();
-    Image* recombine(Image*);
+
+    // Genetic operators
+    void recombine(Image*, Image*);
     void recombine_pixels(Image*, Image*);
+    void mutate();
     void mutate_pixels();
+
     void set_color(float r, float g, float b);
+
+    // IO
+    void print();
+    void print_pixel(int, int);
     void save(char *);
 };

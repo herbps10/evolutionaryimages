@@ -8,9 +8,12 @@ double Image::sumOfError(float *buffer, int height, int width){
         return -1.0;
     }
 
-    for(i=0;i<DEFAULT_HEIGHT*DEFAULT_WIDTH*3;i++) {
-        error += image_buffer[i] < buffer[i] ? buffer[i] - image_buffer[i] : image_buffer[i] - buffer[i];
+    for(i = 0; i < DEFAULT_HEIGHT * DEFAULT_WIDTH * 3; i++) {
+        error += abs(buffer[i] - image_buffer[i]);
     }
+
+    //error = error / (3 * 255 * DEFAULT_HEIGHT * DEFAULT_WIDTH);
+
     
     return error;
 }
@@ -29,12 +32,12 @@ double Image::sumOfSquaresError(float *buffer, int height, int width){
     for(i = 0; i < DEFAULT_HEIGHT * DEFAULT_WIDTH * 3; i++) {
         diff = image_buffer[i] - buffer[i];
 
+        // Moved normalization up here so that error size doesn't overflow
         error += diff*diff;
     }
 
-    // Normalize to [0, 1]
-    error = error / (3 * 255 * DEFAULT_HEIGHT * DEFAULT_WIDTH);
-    
+    //error = error / (3 * 255 * DEFAULT_HEIGHT * DEFAULT_WIDTH);
+
     return error;
 }
 
@@ -143,8 +146,8 @@ void Image::randomize_polygons()
 
     for(int vertex_index = 0; vertex_index < num_points; vertex_index++)
     {
-      polygons[poly_index].points[vertex_index].x = rand_one();
-      polygons[poly_index].points[vertex_index].y = rand_one();
+      polygons[poly_index].points[vertex_index].x = rand_one() * DEFAULT_WIDTH;
+      polygons[poly_index].points[vertex_index].y = rand_one() * DEFAULT_HEIGHT;
       polygons[poly_index].points[vertex_index].z = rand_one();
     }
   }
@@ -165,8 +168,43 @@ void Image::print()
   }
 }
 
+void Image::render_scanline()
+{
+
+  for(int i = 0; i < 3 * DEFAULT_HEIGHT * DEFAULT_WIDTH; i++)
+  {
+    image_buffer[i] = 0;
+  }
+
+  for(int poly_index = 0; poly_index < MAX_POLYGONS; poly_index++)
+  {
+    // Find the leftmost and rightmost x values
+    float min_x = min(polygons[poly_index].points[0].x, min(polygons[poly_index].points[1].x, polygons[poly_index].points[2].x));
+    float max_x = max(polygons[poly_index].points[0].x, max(polygons[poly_index].points[1].x, polygons[poly_index].points[2].x));
+
+    float min_y = min(polygons[poly_index].points[0].y, min(polygons[poly_index].points[1].y, polygons[poly_index].points[2].y));
+    float max_y = max(polygons[poly_index].points[0].y, max(polygons[poly_index].points[1].y, polygons[poly_index].points[2].y));
+
+    for(int x = round(min_x); x <= round(max_x); x++)
+    {
+      for(int y = round(min_y); y <= round(max_y); y++)
+      {
+        if(pointInTriangle(&polygons[poly_index], x, y))
+        {
+          int linear_index = 3 * y * DEFAULT_HEIGHT + 3 * x;
+
+          // Take into account opacity
+          image_buffer[linear_index] = ((1 - polygons[poly_index].color.a) * 255 * polygons[poly_index].color.r) + polygons[poly_index].color.a * image_buffer[linear_index];
+          image_buffer[linear_index + 1] = (1 - polygons[poly_index].color.a) * 255 * polygons[poly_index].color.g + polygons[poly_index].color.a * image_buffer[linear_index + 1];
+          image_buffer[linear_index + 2] = (1 - polygons[poly_index].color.a) * 255 * polygons[poly_index].color.b + polygons[poly_index].color.a * image_buffer[linear_index + 2];
+        }
+      }
+    }
+  }
+}
+
 //called from display()
-void Image::render()
+void Image::render_opengl()
 {
    // printf("render called\n");
   for(int poly_index = 0; poly_index < MAX_POLYGONS; poly_index++)
@@ -238,40 +276,46 @@ void Image::save(char *filename)
 	render_image.save(filename);
 }
 
-void Image::calculate_fitness(Image * target)
+void Image::calculate_fitness(Image *target)
 {
 	fitness = sumOfSquaresError(target->image_buffer, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 }
 
 void Image::mutate()
 {
-	for(int i = 0; i < MAX_POLYGONS; i++)
-	{
-		if(rand_one() < MUTATION_PR)
-		{
-			int index = (random() / RAND_MAX) * 3;
-			
-			polygons[i].points[index].x += rand_one() - 0.5;
-			polygons[i].points[index].y += rand_one() - 0.5;
-			
-			polygons[i].color.r += rand_one() - 0.5;
-			polygons[i].color.g += rand_one() - 0.5;
-			polygons[i].color.b += rand_one() - 0.5;
-			polygons[i].color.a += rand_one() - 0.5;
-			
-			if(polygons[i].points[index].x < 0) polygons[i].points[index].x = 0;
-			if(polygons[i].points[index].y < 0) polygons[i].points[index].y = 0;
-			if(polygons[i].color.r < 0) polygons[i].color.a = 0;
-			if(polygons[i].color.g < 0) polygons[i].color.g = 0;
-			if(polygons[i].color.b < 0) polygons[i].color.b = 0;
-			
-			if(polygons[i].points[index].x > 1) polygons[i].points[index].x = 1;
-			if(polygons[i].points[index].y > 1) polygons[i].points[index].y = 1;
-			if(polygons[i].color.r > 1) polygons[i].color.a = 1;
-			if(polygons[i].color.g > 1) polygons[i].color.g = 1;
-			if(polygons[i].color.b > 1) polygons[i].color.b = 1;
-		}
-	}
+  int i = rand_one() * MAX_POLYGONS;
+
+  if(rand_one() < MUTATION_PR)
+  {
+    int index = rand_one() * 3;
+    
+    if(rand_one() < 0.5)
+    {
+      polygons[i].points[index].x += rand_range(-2, 2);
+      polygons[i].points[index].y += rand_range(-2, 2);
+    }
+    else
+    {
+      polygons[i].color.r += rand_range(-0.01, 0.01); 
+      polygons[i].color.g += rand_range(-0.01, 0.01);
+      polygons[i].color.b += rand_range(-0.01, 0.01);
+      polygons[i].color.a += rand_range(-0.01, 0.01);
+    }
+    
+    if(polygons[i].points[index].x < 0) polygons[i].points[index].x = 0;
+    if(polygons[i].points[index].y < 0) polygons[i].points[index].y = 0;
+    if(polygons[i].color.r < 0) polygons[i].color.r = 0;
+    if(polygons[i].color.g < 0) polygons[i].color.g = 0;
+    if(polygons[i].color.b < 0) polygons[i].color.b = 0;
+    if(polygons[i].color.a < 0) polygons[i].color.a = 0;
+    
+    if(polygons[i].points[index].x > 1) polygons[i].points[index].x = 1;
+    if(polygons[i].points[index].y > 1) polygons[i].points[index].y = 1;
+    if(polygons[i].color.r > 1) polygons[i].color.a = 1;
+    if(polygons[i].color.g > 1) polygons[i].color.g = 1;
+    if(polygons[i].color.b > 1) polygons[i].color.b = 1;
+    if(polygons[i].color.a > 1) polygons[i].color.a = 1;
+  }
 }
 
 void Image::mutate_pixels()
@@ -310,9 +354,9 @@ void Image::set_color(float r, float g, float b)
 	{
 		for(int y = 0; y < DEFAULT_HEIGHT; y++)
 		{
-			image_buffer[i * 3] = 255;
-			image_buffer[i * 3 + 1] = 255;
-			image_buffer[i * 3 + 2] = 255;
+			image_buffer[i * 3] = r;
+			image_buffer[i * 3 + 1] = g;
+			image_buffer[i * 3 + 2] = b;
 
 			i++;
 		}
@@ -344,56 +388,29 @@ void Image::recombine_pixels(Image* first, Image* second)
 	}
 }
 
-Image* Image::recombine(Image* second)
+void Image::recombine(Image* first, Image* second)
 {
-	Image *result = new Image();
-	
+
 	for(int i = 0; i < MAX_POLYGONS; i++)
 	{
-		for(int j = 0; j < MAX_POINTS; j++)
-		{
-			result->polygons[i].points[j].x = polygons[i].points[j].x;
-			result->polygons[i].points[j].y = polygons[i].points[j].y;
-		}
-		
-		result->polygons[i].color.r = second->polygons[i].color.r;
-		result->polygons[i].color.g = second->polygons[i].color.g;
-		result->polygons[i].color.b = second->polygons[i].color.b;
-		result->polygons[i].color.a = second->polygons[i].color.a;
-	}   
-	
-	return result;
-   
-}
+    Image *temp = first;
 
-bool pointInTriangle(polygon *triangle, float x, float y)
-{
-  float y1 = triangle->points[0].y;
-  float y2 = triangle->points[1].y;
-  float y3 = triangle->points[2].y;
-
-  float x1 = triangle->points[0].x;
-  float x2 = triangle->points[1].x;
-  float x3 = triangle->points[2].x;
-
-  float lambda[3];
-
-  //Convert to barycentric coordinate system
-  lambda[0] = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / ((y2 - y3)*(x1 - x3) + (x3 - x2) * (y1 - y3));
-
-  lambda[1] = ((y3 - y1)*(x - x3) + (x1 - x3)*(y-y3)) / ((y2 - y3)*(x1-x3) + (x3 - x2)*(y1 - y3));
-
-  lambda[2] = 1 - lambda[0] - lambda[1];
-
-  // If lambda 1, 2, and 3 are between 0 and 1, then the point x,y is in the triangle
-
-  for(int i = 0; i < 3; i++)
-  {
-    if(lambda[i] < 0 || lambda[i] > 1)
+    // Adopt this polygon from either the first or second parent
+    if(rand_one() < 0.5)
     {
-      return false;
+      temp = second;
     }
-  }
 
-  return true;
-};
+    for(int j = 0; j < 3; j++)
+    {
+      polygons[i].points[j].x = temp->polygons[i].points[j].x;
+      polygons[i].points[j].y = temp->polygons[i].points[j].y;
+      polygons[i].points[j].z = temp->polygons[i].points[j].z;
+    }
+
+		polygons[i].color.r = temp->polygons[i].color.r;
+		polygons[i].color.g = temp->polygons[i].color.g;
+		polygons[i].color.b = temp->polygons[i].color.b;
+		polygons[i].color.a = temp->polygons[i].color.a;
+	}   
+}

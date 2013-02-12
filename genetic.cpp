@@ -20,16 +20,79 @@ inline float rand_one()
 #endif
 }
 
+inline float rand_range(float min, float max)
+{
+  return (((float)random() / (float)RAND_MAX) * (max - min) + min);
+}
+
 #include "header.h"
+
+bool pointInTriangle(polygon *triangle, float x, float y)
+{
+  float y1 = triangle->points[0].y;
+  float y2 = triangle->points[1].y;
+  float y3 = triangle->points[2].y;
+
+  float x1 = triangle->points[0].x;
+  float x2 = triangle->points[1].x;
+  float x3 = triangle->points[2].x;
+
+  float lambda[3];
+
+  //Convert to barycentric coordinate system
+  lambda[0] = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / ((y2 - y3)*(x1 - x3) + (x3 - x2) * (y1 - y3));
+
+  lambda[1] = ((y3 - y1)*(x - x3) + (x1 - x3)*(y-y3)) / ((y2 - y3)*(x1-x3) + (x3 - x2)*(y1 - y3));
+
+  lambda[2] = 1 - lambda[0] - lambda[1];
+
+  // If lambda 1, 2, and 3 are between 0 and 1, then the point x,y is in the triangle
+
+  for(int i = 0; i < 3; i++)
+  {
+    if(lambda[i] < 0 || lambda[i] > 1)
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
 #include "image.h"
 #include "image.cpp"
-
-
-
 
 int compare(Image *a, Image *b)
 {
 	return a->fitness < b->fitness;
+}
+
+
+//
+// This method isn't finished -- right now it 
+// gives higher weight to the individuals with higher fitness.
+// this is backwards, since lower fitness is better. 
+// we need to figure out how to do an inverse weighted random
+// parent selector.
+//
+int weighted_random_parent(Image **population, float fitness_sum)
+{
+
+  float t = rand_one() * fitness_sum;
+
+  for(int i = 0; i < POPULATION_SIZE; i++)
+  {
+
+    if(t < population[i]->fitness)
+    {
+      return i;
+    }
+
+    t -= population[i]->fitness;
+  }
+
+  return POPULATION_SIZE - 1;
 }
 
 int main(int argc, char** argv)
@@ -38,14 +101,13 @@ int main(int argc, char** argv)
 
 	Image *target = new Image();
 
-	target->load_from_file("target.bmp");
+	//target->load_from_file("target.bmp");
+  target->allocate_image_buffer(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
-	//target->randomize_pixels();
-	//target->set_color(255, 0, 0);
+  //target->randomize_polygons();
+  //target->render_scanline();
+	target->set_color(0, 255, 0);
 
-	cout << "Target:" << endl;
-	target->print_pixel(0, 0);
-	cout << endl;
 
 	Image *population[POPULATION_SIZE];
 
@@ -55,45 +117,49 @@ int main(int argc, char** argv)
 
   Image *temp;
 
-  int elitism = 10;
-
-	//FILE *stats = fopen("population_size_test.csv", "w");
-	//fprintf(stats, "population_size, fitness\n");
+  int elitism = 200;
+  float fitness_sum = 0;
 
   // generate the population
   for(int i = 0; i < POPULATION_SIZE; i++)
   {
-    cout << i << " " << population[i] << endl;
     population[i] = new Image();
-    population[i]->randomize_pixels();
+    population[i]->allocate_image_buffer(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
-    population[i]->print_pixel(0, 0);
-
-    //population[i]->calculate_fitness(*target); //this allocates a new object and then passes it by value every time
+    population[i]->randomize_polygons();
+    population[i]->render_scanline();
     population[i]->calculate_fitness(target); 
 
-    cout << population[i]->fitness << endl << endl;
-
-    //population[i]->randomize_polygons();
+    fitness_sum += population[i]->fitness;
   }
 
   // Sort the population
   sort(population, population + POPULATION_SIZE, compare);
-  
+
   for(int generation = 0; generation < GENERATIONS; generation++)
   {
-    int i1 = (int)(rand_one() * (float)elitism); 
-    int i2 = (int)(rand_one() * (float)elitism); 
+    //int i1 = weighted_random_parent(population, fitness_sum);
+    //int i2 = weighted_random_parent(population, fitness_sum);
+    int i1 = rand_one() * elitism;
+    int i2 = rand_one() * elitism;
 
-    //population[i1]->recombine(*population[i2]);
-    new_individual->recombine_pixels(population[i1], population[i2]);
-    new_individual->mutate_pixels();
+    new_individual->recombine(population[i1], population[i2]);
+    new_individual->mutate();
+
+    new_individual->render_scanline();
     new_individual->calculate_fitness(target);
+
+    //cout << population[POPULATION_SIZE - 1]->fitness << " "  << new_individual->fitness << endl;
 
     // If the new individual is better than the worst in the current population,
     // replace the worst one with the new one
     if(new_individual->fitness < population[POPULATION_SIZE - 1]->fitness)
     {
+      // Update the sum of fitnesses in the population
+      fitness_sum -= population[POPULATION_SIZE - 1]->fitness;
+      fitness_sum += new_individual->fitness;
+
+      // Replace the worst individual with the new one
       temp = new_individual;
       new_individual = population[POPULATION_SIZE - 1];
       population[POPULATION_SIZE - 1] = temp;
@@ -112,7 +178,7 @@ int main(int argc, char** argv)
 
     if(generation % 1000 == 0)
     {
-      cout << generation << " " << population[0]->fitness << endl;
+      cout << generation << " " << population[0]->fitness << " " << population[POPULATION_SIZE - 1]->fitness - population[0]->fitness << endl;
     }
   }
 	
