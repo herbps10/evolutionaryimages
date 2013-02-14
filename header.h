@@ -13,10 +13,10 @@
 #define MUTATION_PR 0.5
 #define MUTATION_SPREAD 5
 
-#define DEFAULT_WIDTH 100
-#define DEFAULT_HEIGHT 100
+#define DEFAULT_WIDTH 50
+#define DEFAULT_HEIGHT 50
 #define MAX_POINTS 3 //maximum points per polygon
-#define MAX_POLYGONS 1000
+#define MAX_POLYGONS 50
 
 #define POPULATION_SIZE 1000
 

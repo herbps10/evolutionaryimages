@@ -29,7 +29,7 @@ double Image::sumOfSquaresError(float *buffer, int height, int width){
         return -1.0;
     }
 
-    for(i = 0; i < DEFAULT_HEIGHT * DEFAULT_WIDTH * 3; i++) {
+    for(i = 0; i < DEFAULT_HEIGHT * DEFAULT_WIDTH * 3; i += 1) {
         diff = image_buffer[i] - buffer[i];
 
         // Moved normalization up here so that error size doesn't overflow
@@ -144,11 +144,28 @@ void Image::randomize_polygons()
     polygons[poly_index].color.b = rand_one();
     polygons[poly_index].color.a = rand_one();
 
+    int base_x = rand_one() * DEFAULT_WIDTH;
+    int base_y = rand_one() * DEFAULT_HEIGHT;
+
     for(int vertex_index = 0; vertex_index < num_points; vertex_index++)
     {
-      polygons[poly_index].points[vertex_index].x = rand_one() * DEFAULT_WIDTH;
-      polygons[poly_index].points[vertex_index].y = rand_one() * DEFAULT_HEIGHT;
+      polygons[poly_index].points[vertex_index].x = base_x + (int)rand_range(-10, 10);
+      polygons[poly_index].points[vertex_index].y = base_y + (int)rand_range(-10, 10);
       polygons[poly_index].points[vertex_index].z = rand_one();
+
+
+      // Make sure the point doesn't lie outside the bounds of the iamge
+      if(polygons[poly_index].points[vertex_index].x < 0)
+        polygons[poly_index].points[vertex_index].x = 0;
+
+      if(polygons[poly_index].points[vertex_index].y < 0)
+        polygons[poly_index].points[vertex_index].y = 0;
+
+      if(polygons[poly_index].points[vertex_index].x >= DEFAULT_WIDTH)
+        polygons[poly_index].points[vertex_index].x = DEFAULT_WIDTH - 1;
+
+      if(polygons[poly_index].points[vertex_index].y >= DEFAULT_HEIGHT)
+        polygons[poly_index].points[vertex_index].y = DEFAULT_HEIGHT - 1;
     }
   }
 }
@@ -309,8 +326,8 @@ void Image::mutate()
     if(polygons[i].color.b < 0) polygons[i].color.b = 0;
     if(polygons[i].color.a < 0) polygons[i].color.a = 0;
     
-    if(polygons[i].points[index].x > 1) polygons[i].points[index].x = 1;
-    if(polygons[i].points[index].y > 1) polygons[i].points[index].y = 1;
+    if(polygons[i].points[index].x >= DEFAULT_WIDTH) polygons[i].points[index].x = DEFAULT_WIDTH - 1;
+    if(polygons[i].points[index].y >= DEFAULT_HEIGHT) polygons[i].points[index].y = DEFAULT_HEIGHT - 1;
     if(polygons[i].color.r > 1) polygons[i].color.a = 1;
     if(polygons[i].color.g > 1) polygons[i].color.g = 1;
     if(polygons[i].color.b > 1) polygons[i].color.b = 1;
