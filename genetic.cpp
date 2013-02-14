@@ -101,12 +101,12 @@ int main(int argc, char** argv)
 
 	Image *target = new Image();
 
-	//target->load_from_file("target.bmp");
-  target->allocate_image_buffer(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+	target->load_from_file("target.bmp");
+  //target->allocate_image_buffer(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
   //target->randomize_polygons();
   //target->render_scanline();
-	target->set_color(0, 255, 0);
+	//target->set_color(0, 255, 0);
 
 
 	Image *population[POPULATION_SIZE];
@@ -179,6 +179,11 @@ int main(int argc, char** argv)
     if(generation % 1000 == 0)
     {
       cout << generation << " " << population[0]->fitness << " " << population[POPULATION_SIZE - 1]->fitness - population[0]->fitness << endl;
+
+      char filename[100];
+      snprintf(filename, 100, "output/generation-%i.bmp", generation);
+
+      population[0]->save(filename);
     }
   }
 	
