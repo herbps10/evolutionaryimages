@@ -39,18 +39,21 @@ bool pointInTriangle(polygon *triangle, float x, float y)
 
   float lambda[3];
 
+  // reduce the amount of expensive floating point math
+  float denominator = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+
   //Convert to barycentric coordinate system
-  lambda[0] = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / ((y2 - y3)*(x1 - x3) + (x3 - x2) * (y1 - y3));
+  lambda[0] = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / denominator;
 
-  lambda[1] = ((y3 - y1)*(x - x3) + (x1 - x3)*(y-y3)) / ((y2 - y3)*(x1-x3) + (x3 - x2)*(y1 - y3));
+  lambda[1] = ((y3 - y1)*(x - x3) + (x1 - x3)*(y - y3)) / denominator;
 
-  lambda[2] = 1 - lambda[0] - lambda[1];
+  lambda[2] = 1.0f - lambda[0] - lambda[1];
 
   // If lambda 1, 2, and 3 are between 0 and 1, then the point x,y is in the triangle
 
   for(int i = 0; i < 3; i++)
   {
-    if(lambda[i] < 0 || lambda[i] > 1)
+    if(lambda[i] < 0.0f || lambda[i] > 1.0f)
     {
       return false;
     }
