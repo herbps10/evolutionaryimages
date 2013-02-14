@@ -29,39 +29,25 @@ inline float rand_range(float min, float max)
 
 bool pointInTriangle(polygon *triangle, float x, float y)
 {
-  float y1 = triangle->points[0].y;
-  float y2 = triangle->points[1].y;
-  float y3 = triangle->points[2].y;
-
-  float x1 = triangle->points[0].x;
-  float x2 = triangle->points[1].x;
-  float x3 = triangle->points[2].x;
-
-  float lambda[3];
+  float lambda1, lambda2, lambda3;
 
   // reduce the amount of expensive floating point math
-  float denominator = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3);
+  float denominator = (triangle->points[1].y - triangle->points[2].y) * (triangle->points[0].x - triangle->points[2].x) + (triangle->points[2].x - triangle->points[1].x) * (triangle->points[0].y - triangle->points[2].y);
+  float x_x3 = x - triangle->points[2].x;
+  float y_y3 = y - triangle->points[2].y;
 
   //Convert to barycentric coordinate system
-  lambda[0] = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / denominator;
+  lambda1 = ((triangle->points[1].y - triangle->points[2].y)*(x_x3) + (triangle->points[2].x - triangle->points[1].x)*(y_y3)) / denominator;
+  if(lambda1 < 0.0f || lambda1 > 1.0f) return false;
 
-  lambda[1] = ((y3 - y1)*(x - x3) + (x1 - x3)*(y - y3)) / denominator;
+  lambda2 = ((triangle->points[2].y - triangle->points[0].y)*(x_x3) + (triangle->points[0].x - triangle->points[2].x)*(y_y3)) / denominator;
+  if(lambda2 < 0.0f || lambda2 > 1.0f) return false;
 
-  lambda[2] = 1.0f - lambda[0] - lambda[1];
-
-  // If lambda 1, 2, and 3 are between 0 and 1, then the point x,y is in the triangle
-
-  for(int i = 0; i < 3; i++)
-  {
-    if(lambda[i] < 0.0f || lambda[i] > 1.0f)
-    {
-      return false;
-    }
-  }
+  lambda3 = 1.0f - lambda2 - lambda1;
+  if(lambda3 < 0.0f || lambda3 > 1.0f) return false;
 
   return true;
 }
-
 
 #include "image.h"
 #include "image.cpp"
@@ -81,7 +67,6 @@ int compare(Image *a, Image *b)
 //
 int weighted_random_parent(Image **population, float fitness_sum)
 {
-
   float t = rand_one() * fitness_sum;
 
   for(int i = 0; i < POPULATION_SIZE; i++)
@@ -104,7 +89,15 @@ int main(int argc, char** argv)
 
 	Image *target = new Image();
 
-	target->load_from_file((char *)"target.bmp");
+  if(argc > 1)
+  {
+    target->load_from_file(argv[1]);
+  }
+  else
+  {
+    cout << "Loading default image target.bmp" << endl;
+	  target->load_from_file((char *)"target.bmp");
+  }
   //target->allocate_image_buffer(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
   //target->randomize_polygons();
@@ -120,7 +113,7 @@ int main(int argc, char** argv)
 
   Image *temp;
 
-  int elitism = 200;
+  int elitism = 20;
   float fitness_sum = 0;
 
   // generate the population
@@ -139,6 +132,7 @@ int main(int argc, char** argv)
   // Sort the population
   sort(population, population + POPULATION_SIZE, compare);
 
+  // Not really generations anymore since each new individual is added immediately
   for(int generation = 0; generation < GENERATIONS; generation++)
   {
     //int i1 = weighted_random_parent(population, fitness_sum);
@@ -179,7 +173,7 @@ int main(int argc, char** argv)
       }
     }
 
-    if(generation % 1000 == 0)
+    if(generation % 10000 == 0)
     {
       cout << generation << " " << population[0]->fitness << " " << population[POPULATION_SIZE - 1]->fitness - population[0]->fitness << endl;
 

@@ -144,13 +144,15 @@ void Image::randomize_polygons()
     polygons[poly_index].color.b = rand_one();
     polygons[poly_index].color.a = rand_one();
 
+    /*
     int base_x = rand_one() * DEFAULT_WIDTH;
     int base_y = rand_one() * DEFAULT_HEIGHT;
+    */
 
     for(int vertex_index = 0; vertex_index < num_points; vertex_index++)
     {
-      polygons[poly_index].points[vertex_index].x = base_x + (int)rand_range(-30, 30);
-      polygons[poly_index].points[vertex_index].y = base_y + (int)rand_range(-30, 30);
+      polygons[poly_index].points[vertex_index].x = rand_one() * DEFAULT_WIDTH;
+      polygons[poly_index].points[vertex_index].y = rand_one() * DEFAULT_HEIGHT;
       polygons[poly_index].points[vertex_index].z = rand_one();
 
 
@@ -193,6 +195,7 @@ void Image::render_scanline()
     image_buffer[i] = 0;
   }
 
+  // Loop through all the polygons
   for(int poly_index = 0; poly_index < MAX_POLYGONS; poly_index++)
   {
     // Find the leftmost and rightmost x values
@@ -202,6 +205,7 @@ void Image::render_scanline()
     float min_y = min(polygons[poly_index].points[0].y, min(polygons[poly_index].points[1].y, polygons[poly_index].points[2].y));
     float max_y = max(polygons[poly_index].points[0].y, max(polygons[poly_index].points[1].y, polygons[poly_index].points[2].y));
 
+    // Loop through all the pixels in the polygon's bounding box
     for(int x = round(min_x); x <= round(max_x); x++)
     {
       for(int y = round(min_y); y <= round(max_y); y++)
@@ -211,7 +215,7 @@ void Image::render_scanline()
           int linear_index = 3 * y * DEFAULT_HEIGHT + 3 * x;
 
           // Take into account opacity
-          image_buffer[linear_index] = ((1 - polygons[poly_index].color.a) * 255 * polygons[poly_index].color.r) + polygons[poly_index].color.a * image_buffer[linear_index];
+          image_buffer[linear_index]     = (1 - polygons[poly_index].color.a) * 255 * polygons[poly_index].color.r + polygons[poly_index].color.a * image_buffer[linear_index];
           image_buffer[linear_index + 1] = (1 - polygons[poly_index].color.a) * 255 * polygons[poly_index].color.g + polygons[poly_index].color.a * image_buffer[linear_index + 1];
           image_buffer[linear_index + 2] = (1 - polygons[poly_index].color.a) * 255 * polygons[poly_index].color.b + polygons[poly_index].color.a * image_buffer[linear_index + 2];
         }
@@ -308,8 +312,21 @@ void Image::mutate()
     
     if(rand_one() < 0.5)
     {
-      polygons[i].points[index].x += rand_range(-2, 2);
-      polygons[i].points[index].y += rand_range(-2, 2);
+      /*
+      if(rand_one() < 0.1)
+      {
+        for(int v = 0; v < 3; v++)
+        {
+          polygons[i].points[index].x += rand_range(-20, 20);
+          polygons[i].points[index].y += rand_range(-20, 20);
+        }
+      }
+      else
+      {
+      */
+        polygons[i].points[index].x += rand_range(-2, 2);
+        polygons[i].points[index].y += rand_range(-2, 2);
+      //}
     }
     else
     {
