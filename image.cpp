@@ -149,8 +149,8 @@ void Image::randomize_polygons()
 
     for(int vertex_index = 0; vertex_index < num_points; vertex_index++)
     {
-      polygons[poly_index].points[vertex_index].x = base_x + (int)rand_range(-10, 10);
-      polygons[poly_index].points[vertex_index].y = base_y + (int)rand_range(-10, 10);
+      polygons[poly_index].points[vertex_index].x = base_x + (int)rand_range(-30, 30);
+      polygons[poly_index].points[vertex_index].y = base_y + (int)rand_range(-30, 30);
       polygons[poly_index].points[vertex_index].z = rand_one();
 
 
@@ -256,9 +256,9 @@ void Image::render_cimg(bool save, char *filename)
 			polygons[i].color.b * 255};
 
 		render_image.draw_triangle(
-			polygons[i].points[0].x * DEFAULT_WIDTH, polygons[i].points[0].y * DEFAULT_HEIGHT,
-			polygons[i].points[1].x * DEFAULT_WIDTH, polygons[i].points[1].y * DEFAULT_HEIGHT,
-			polygons[i].points[2].x * DEFAULT_WIDTH, polygons[i].points[2].y * DEFAULT_HEIGHT,
+			polygons[i].points[0].x, polygons[i].points[0].y,
+			polygons[i].points[1].x, polygons[i].points[1].y,
+			polygons[i].points[2].x, polygons[i].points[2].y,
 			color,
 			polygons[i].color.a
 		);

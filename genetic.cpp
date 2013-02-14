@@ -104,7 +104,7 @@ int main(int argc, char** argv)
 
 	Image *target = new Image();
 
-	target->load_from_file("target.bmp");
+	target->load_from_file((char *)"target.bmp");
   //target->allocate_image_buffer(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
   //target->randomize_polygons();
@@ -192,8 +192,8 @@ int main(int argc, char** argv)
 	
 	cout << population[0]->fitness << endl;
 
-	population[0]->save((char*)"best.bmp");
-	target->save((char*)"target.bmp");
+	//population[0]->save((char*)"best.bmp");
+	//target->save((char*)"target.bmp");
 
   //fprintf(stats, "%i, %f\n", POPULATION_SIZE, population[0]->fitness);
   //fflush(stats);
