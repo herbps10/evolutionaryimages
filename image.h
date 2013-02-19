@@ -15,7 +15,7 @@ class Image
     ~Image();
     
     // Loader functions
-    void load_from_cimg(CImg<float>);
+    void load_from_cimg(CImg<float>*);
     void load_from_file(char *);
 
     // Randomization

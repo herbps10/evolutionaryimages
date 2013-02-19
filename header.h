@@ -10,8 +10,8 @@
 #include "CImg.h"
 
 #define GENERATIONS 1000000
-#define MUTATION_PR 1
-#define MUTATION_SPREAD 5
+//#define MUTATION_PR 1
+//#define MUTATION_SPREAD 5
 
 #define DEFAULT_WIDTH 100
 #define DEFAULT_HEIGHT 100
@@ -34,9 +34,9 @@ typedef struct color4f {
 } color4f;
 
 typedef struct polygon {
-    int num_p; // number of points (cannot exceed MAX_POINTS)
     color4f color;
     vertex3f points[MAX_POINTS];
+    int num_p; // number of points (cannot exceed MAX_POINTS)
 } polygon;
 
 //function declarations from draw_polygons.cpp

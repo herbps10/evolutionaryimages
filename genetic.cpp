@@ -22,7 +22,11 @@ inline float rand_one()
 
 inline float rand_range(float min, float max)
 {
-  return (((float)random() / (float)RAND_MAX) * (max - min) + min);
+#if defined(__MACOSX__) || defined(__APPLE__)
+  return (float)arc4random() / (float)4294967295 * (max - min) + min; // largest value is 2^32-1 (roughly double RAND_MAX)
+#else
+  return (float)random() / (float)RAND_MAX * (max - min) + min;
+#endif
 }
 
 #include "header.h"
@@ -105,7 +109,7 @@ int main(int argc, char** argv)
 	//target->set_color(0, 255, 0);
 
 
-	Image *population[POPULATION_SIZE];
+   Image *population[POPULATION_SIZE];
 
 
   Image *new_individual = new Image();
@@ -173,12 +177,12 @@ int main(int argc, char** argv)
       }
     }
 
-    if(generation % 10000 == 0)
+    if((generation & 0x1ff) == 0)
     {
       cout << generation << " " << population[0]->fitness << " " << population[POPULATION_SIZE - 1]->fitness - population[0]->fitness << endl;
 
       char filename[100];
-      snprintf(filename, 100, "output/generation-%i.bmp", generation);
+      snprintf(filename, 100, "output/generation-%i.gif", generation);
 
       population[0]->save(filename);
     }
