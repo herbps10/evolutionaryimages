@@ -1,5 +1,15 @@
+int Image::width()
+{
+  return this->image_width;
+}
+
+int Image::height() {
+  return this->image_height;
+}
+
 // assumes image_buffer and buffer are the same size
-double Image::sumOfError(float *buffer, int height, int width){
+double Image::sumOfError(float *buffer, int height, int width)
+{
     int i;
     double error = 0.0;
 
@@ -20,7 +30,8 @@ double Image::sumOfError(float *buffer, int height, int width){
 
 
 // assumes image_buffer and buffer are the same size
-double Image::sumOfSquaresError(float *buffer, int height, int width){
+double Image::sumOfSquaresError(float *buffer, int height, int width)
+{
     int i;
     double error = 0.0, diff;
 
@@ -63,12 +74,15 @@ void Image::allocate_polygons()
     fprintf(stderr, "error malloc-ing polygon_buffer\n");
 }
 
-void Image::allocate_image_buffer(int width, int height)
+void Image::allocate_image_buffer(int buffer_width, int buffer_height)
 {
+  this->image_width = buffer_width;
+  this->image_height = buffer_height;
+
   if(image_buffer == NULL)
   {
     // Allocate space to the target image buffer
-    image_buffer = (float *) malloc(sizeof(float) * width * height * 3);
+    image_buffer = (float *) malloc(sizeof(float) * buffer_width * buffer_height * 3);
     if( image_buffer == NULL )
       fprintf(stderr, "error malloc-ing image_buffer\n");
   }

@@ -9,9 +9,7 @@
 
 #include "CImg.h"
 
-#define GENERATIONS 1000000
-//#define MUTATION_PR 1
-//#define MUTATION_SPREAD 5
+#define ITERATIONS 1000000
 
 #define DEFAULT_WIDTH 100
 #define DEFAULT_HEIGHT 100
