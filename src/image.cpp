@@ -470,3 +470,5 @@ void Image::recombine(Image* first, Image* second)
 		polygons[i].color.a = temp->polygons[i].color.a;
 	}   
 }
+
+
