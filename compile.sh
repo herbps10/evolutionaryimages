@@ -8,7 +8,7 @@ if [ `uname` == Darwin ]; then
     #g++ -Wall -o genetic genetic.cpp -g -L/usr/X11R6/lib -lX11 -I/usr/X11R6/include
     exit $?
 else
-    #g++ -O3 -Wall -o bin/singlethreaded src/singlethreaded.cpp -lX11 -lpthread -lglut -g
+    #g++ -Wall -o bin/singlethreaded src/singlethreaded.cpp -lX11 -lpthread -lglut -g
     mpiCC -Wall -o bin/distributed src/distributed.cpp -lX11 -lpthread -lglut -g
     exit $?
 fi

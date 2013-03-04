@@ -8,7 +8,6 @@ class Image
   float *image_buffer;
   float *polygon_buffer;
 
-  polygon polygons[MAX_POLYGONS];
 
   // private error calculating functions to be called by fitness
   double sumOfError(float *buffer, int height, int width); // compares buffer to image_buffer and sums the error
@@ -19,6 +18,7 @@ class Image
 
   public: 
 
+  polygon polygons[MAX_POLYGONS];
   double fitness;
 
   // Construct, destructor
@@ -60,6 +60,9 @@ class Image
   void print();
   void print_pixel(int, int);
   void save(char *);
+
+  float *pack();
+  void unpack(float *);
 };
 
 #endif
