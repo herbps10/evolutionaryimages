@@ -471,6 +471,10 @@ void Image::recombine(Image* first, Image* second)
 	}   
 }
 
+int Image::pack_size() {
+  return (2 * 3 + 4) * MAX_POLYGONS;
+}
+
 //
 // Format:
 // Each polygon is encoded as 10 floats. The first six are the x and y coordinates of the vertices.
@@ -478,7 +482,7 @@ void Image::recombine(Image* first, Image* second)
 //
 float *Image::pack()
 {
-  float *buffer = (float *) malloc(((sizeof(float) * 2) * 3 + sizeof(float) * 4) * MAX_POLYGONS);
+  float *buffer = (float *) malloc(sizeof(float) * pack_size());
 
   for(int i = 0; i < MAX_POLYGONS; i++)
   {

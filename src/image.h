@@ -61,6 +61,7 @@ class Image
   void print_pixel(int, int);
   void save(char *);
 
+  int pack_size();
   float *pack();
   void unpack(float *);
 };
