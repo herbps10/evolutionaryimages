@@ -5,7 +5,7 @@ Population::Population(Image *target)
   new_individual = new Image();
   new_individual->allocate_image_buffer(target->width(), target->height());
   
-  elitism = 20;
+  elitism = 30;
 
   iteration = 0;
 
@@ -42,6 +42,31 @@ void Population::iterate()
   this->new_individual->render_scanline();
   this->new_individual->calculate_fitness(this->target);
 
+  this->test_new_individual();
+}
+
+void Population::save_individual(int n, char *filename)
+{
+  this->population[n]->save(filename);
+}
+
+Image *Population::get(int n)
+{
+  return this->population[n];
+}
+
+void Population::add_from_buffer(float *buffer)
+{
+  new_individual->unpack(buffer);
+  this->new_individual->render_scanline();
+  this->new_individual->calculate_fitness(this->target);
+
+  // If the new individual is better than our worst, it will get added to the population
+  this->test_new_individual();
+}
+
+void Population::test_new_individual()
+{
   // If the new individual is better than the worst in the current population,
   // replace the worst one with the new one
   if(new_individual->fitness < population[POPULATION_SIZE - 1]->fitness)
@@ -62,14 +87,4 @@ void Population::iterate()
       index--;
     }
   }
-}
-
-void Population::save_individual(int n, char *filename)
-{
-  this->population[n]->save(filename);
-}
-
-Image *Population::get(int n)
-{
-  return this->population[n];
 }

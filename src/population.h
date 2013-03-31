@@ -11,6 +11,9 @@ class Population
   void save_individual(int n, char *filename);
   Image *get(int n);
 
+  void add_from_buffer(float *buffer);
+  void test_new_individual();
+
 	private:
 	Image *population[POPULATION_SIZE];
 
@@ -20,6 +23,9 @@ class Population
 
   int elitism;
   int iteration; // Number of iterations performed
+
+  void bubble();
+
 };
 
 #endif

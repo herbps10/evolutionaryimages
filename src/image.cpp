@@ -471,4 +471,52 @@ void Image::recombine(Image* first, Image* second)
 	}   
 }
 
+int Image::pack_size() {
+  return (2 * 3 + 4) * MAX_POLYGONS;
+}
 
+//
+// Format:
+// Each polygon is encoded as 10 floats. The first six are the x and y coordinates of the vertices.
+// The last four are the rgba color values.
+//
+float *Image::pack()
+{
+  float *buffer = (float *) malloc(sizeof(float) * pack_size());
+
+  for(int i = 0; i < MAX_POLYGONS; i++)
+  {
+    for(int j = 0; j < 3; j++)
+    {
+      // Right now we're only going to save x & y, as 
+      buffer[(i * 10) + 2*j] = polygons[i].points[j].x;
+      buffer[(i * 10) + 2*j + 1] = polygons[i].points[j].y;
+    }
+
+    buffer[(i * 10) + 6] = polygons[i].color.r;
+    buffer[(i * 10) + 7] = polygons[i].color.g;
+    buffer[(i * 10) + 8] = polygons[i].color.b;
+    buffer[(i * 10) + 9] = polygons[i].color.a;
+  }
+
+
+  return buffer;
+}
+
+// Unpacks a float buffer into the image
+void Image::unpack(float *buffer)
+{
+  for(int i = 0; i < MAX_POLYGONS; i++)
+  {
+    for(int j = 0; j < 3; j++)
+    {
+      polygons[i].points[j].x = buffer[(i * 10) + 2*j];
+      polygons[i].points[j].y = buffer[(i * 10) + 2*j + 1];
+    }
+
+    polygons[i].color.r = buffer[(i * 10) + 6];
+    polygons[i].color.g = buffer[(i * 10) + 7];
+    polygons[i].color.b = buffer[(i * 10) + 8];
+    polygons[i].color.a = buffer[(i * 10) + 9];
+  }
+}
