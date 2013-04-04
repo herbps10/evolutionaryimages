@@ -31,7 +31,7 @@ int main(int argc, char** argv)
   // -------------
   // Intialize MPI
   // -------------
-  int err, rank;
+  int err, rank, num_nodes;
 
   // Initialize
   err = MPI_Init(&argc, &argv);
@@ -42,8 +42,10 @@ int main(int argc, char** argv)
     exit(1);
   }
 
-  // Get our rank
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank); // Get our rank
+  MPI_Comm_size(MPI_COMM_WORLD, &num_nodes); // Get the number of nodes
+
 
   cout << "Rank " << rank << " Initialized." << endl;
 
@@ -105,12 +107,12 @@ int main(int argc, char** argv)
 
     population->iterate();
 
-    if((iteration & 0x1ff) == 0)
+    if((iteration % 5000) == 0)
     {
       // Send best individual to a random host
       send_buffer = population->get(0)->pack();
 
-      int recv_node = rand() % 16;
+      int recv_node = rand() % num_nodes;
       //int recv_node = 1;
 
       MPI_Request request;
@@ -125,7 +127,7 @@ int main(int argc, char** argv)
       population->save_individual(0, filename);
 
       char command[200];
-      snprintf(command, 200, "cp /home/hps1/evolutionaryimages/output/%i/iteration-%i.gif /home/hps1/evolutionaryimages/output/%i/recent.gif", rank, iteration, rank );
+      snprintf(command, 200, "cp /home/herb/git/evolutionaryimages/output/%i/iteration-%i.gif /home/herb/git/evolutionaryimages/output/%i/recent.gif", rank, iteration, rank );
 
       system(command);
     }

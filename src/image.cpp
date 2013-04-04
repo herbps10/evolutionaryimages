@@ -169,10 +169,13 @@ void Image::randomize_polygons()
     int base_y = rand_one() * DEFAULT_HEIGHT;
     */
 
+    float center_x = rand_one() * (float)DEFAULT_WIDTH;
+    float center_y = rand_one() * (float)DEFAULT_HEIGHT;
+
     for(int vertex_index = 0; vertex_index < num_points; vertex_index++)
     {
-      polygons[poly_index].points[vertex_index].x = rand_one() * (float)DEFAULT_WIDTH;
-      polygons[poly_index].points[vertex_index].y = rand_one() * (float)DEFAULT_HEIGHT;
+      polygons[poly_index].points[vertex_index].x = center_x + rand_one() * ((float)DEFAULT_WIDTH / 10.0) - ((float)DEFAULT_WIDTH / 20.0);
+      polygons[poly_index].points[vertex_index].y = center_y + rand_one() * ((float)DEFAULT_HEIGHT / 10.0) - ((float)DEFAULT_HEIGHT / 20.0);
       polygons[poly_index].points[vertex_index].z = rand_one();
 
 
@@ -183,10 +186,10 @@ void Image::randomize_polygons()
       if(polygons[poly_index].points[vertex_index].y < 0)
         polygons[poly_index].points[vertex_index].y = 0;
 
-      if(polygons[poly_index].points[vertex_index].x >= DEFAULT_WIDTH)
+      if(polygons[poly_index].points[vertex_index].x >= DEFAULT_WIDTH - 1)
         polygons[poly_index].points[vertex_index].x = DEFAULT_WIDTH - 1;
 
-      if(polygons[poly_index].points[vertex_index].y >= DEFAULT_HEIGHT)
+      if(polygons[poly_index].points[vertex_index].y >= DEFAULT_HEIGHT - 1)
         polygons[poly_index].points[vertex_index].y = DEFAULT_HEIGHT - 1;
     }
   }
