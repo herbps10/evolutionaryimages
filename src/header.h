@@ -11,13 +11,13 @@
 
 #define ITERATIONS 1000000
 
-#define DEFAULT_WIDTH 250
-#define DEFAULT_HEIGHT 250
+#define DEFAULT_WIDTH 300
+#define DEFAULT_HEIGHT 300
 #define MAX_POINTS 3 //maximum points per polygon
-#define MAX_POLYGONS 2000
+#define MAX_POLYGONS 200
 #define D 2 // 2 for (x,y), 3 for (x,y,z)
 
-#define POPULATION_SIZE 80
+#define POPULATION_SIZE 40
 
 typedef struct vertex3f {
     float x;

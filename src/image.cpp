@@ -359,10 +359,13 @@ void Image::randomize_a_back_polygon_and_move_to_front() {
       polygons[0].color.a = rand_one();
   
   
+      float center_x = rand_one() * (float)DEFAULT_WIDTH;
+      float center_y = rand_one() * (float)DEFAULT_HEIGHT;
+
       for(int vertex_index = 0; vertex_index < num_points; vertex_index++)
       {
-        polygons[0].points[vertex_index].x = rand_one() * (float)DEFAULT_WIDTH;
-        polygons[0].points[vertex_index].y = rand_one() * (float)DEFAULT_HEIGHT;
+        polygons[0].points[vertex_index].x = center_x + rand_one() * ((float)DEFAULT_WIDTH / 10.0) - ((float)DEFAULT_WIDTH / 20.0);
+        polygons[0].points[vertex_index].y = center_y + rand_one() * ((float)DEFAULT_HEIGHT / 10.0) - ((float)DEFAULT_WIDTH / 20.0);
         //polygons[poly_index].points[vertex_index].z = rand_one();
   
   

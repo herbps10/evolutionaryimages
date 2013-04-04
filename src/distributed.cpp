@@ -80,6 +80,8 @@ int main(int argc, char** argv)
   // ---------------------------------
   // Setup & run the genetic algorithm
   // ---------------------------------
+  char filename[100];
+  char command[200];
 
   Population *population = new Population(target);
 
@@ -124,14 +126,9 @@ int main(int argc, char** argv)
 
       cout << "Rank " << rank << " iteration " << iteration << ": best fitness of " << population->get(0)->fitness << " with a fitness range of " << population->get(POPULATION_SIZE - 1)->fitness - population->get(0)->fitness << endl;
 
-      char filename[50];
       snprintf(filename, 100, "output/%i-iteration-%i.jpg", rank, iteration);
+      cout << "Saving to " << filename << endl;
       population->save_individual(0, filename);
-
-      char command[200];
-      snprintf(command, 200, "cp /home/herb/git/evolutionaryimages/output/%i/iteration-%i.gif /home/herb/git/evolutionaryimages/output/%i/recent.gif", rank, iteration, rank );
-
-      system(command);
     }
   }
 
