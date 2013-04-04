@@ -11,12 +11,13 @@
 
 #define ITERATIONS 1000000
 
-#define DEFAULT_WIDTH 100
-#define DEFAULT_HEIGHT 100
+#define DEFAULT_WIDTH 250
+#define DEFAULT_HEIGHT 250
 #define MAX_POINTS 3 //maximum points per polygon
-#define MAX_POLYGONS 200
+#define MAX_POLYGONS 2000
+#define D 2 // 2 for (x,y), 3 for (x,y,z)
 
-#define POPULATION_SIZE 200
+#define POPULATION_SIZE 80
 
 typedef struct vertex3f {
     float x;
@@ -31,9 +32,14 @@ typedef struct color4f {
     float a; // alpha
 } color4f;
 
+typedef struct vertex2f {
+	float x;
+	float y;
+} vertex2f;
+
 typedef struct polygon {
     color4f color;
-    vertex3f points[MAX_POINTS];
+    vertex2f points[MAX_POINTS];
     int num_p; // number of points (cannot exceed MAX_POINTS)
 } polygon;
 

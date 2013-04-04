@@ -31,7 +31,7 @@ int main(int argc, char** argv)
   // -------------
   // Intialize MPI
   // -------------
-  int err, rank;
+  int err, rank, n;
 
   // Initialize
   err = MPI_Init(&argc, &argv);
@@ -44,6 +44,7 @@ int main(int argc, char** argv)
 
   // Get our rank
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &n);
 
   cout << "Rank " << rank << " Initialized." << endl;
 
@@ -82,7 +83,7 @@ int main(int argc, char** argv)
 
   Population *population = new Population(target);
 
-  float *send_buffer; // Used for sending images
+  float *send_buffer = NULL; // Used for sending images
 
   // Not really generations anymore since each new individual is added immediately
   for(int iteration = 0; iteration < ITERATIONS; iteration++)
@@ -93,7 +94,7 @@ int main(int argc, char** argv)
     // If the recieve is complete, then we have an individual from another host to deal with
     if(flag == 1)
     {
-      cout << "Rank " << 1 << " Recieved individual with buffer[0]=" << recieve_buffer[0] << endl;
+      cout << "iteration " << iteration << ": Rank " << rank << " Recieved individual with buffer[0]=" << recieve_buffer[0] << endl;
       
       population->add_from_buffer(recieve_buffer);
 
@@ -102,32 +103,30 @@ int main(int argc, char** argv)
       // Restart the recieve
       MPI_Irecv(recieve_buffer, target->pack_size(), MPI_FLOAT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &request);
     }
-
+	
+    // *** important part
     population->iterate();
 
     if((iteration & 0x1ff) == 0)
     {
       // Send best individual to a random host
+	  free(send_buffer);
       send_buffer = population->get(0)->pack();
 
-      int recv_node = rand() % 16;
-      //int recv_node = 1;
+      int recv_node = rand() % n;
 
-      MPI_Request request;
-      MPI_Isend(send_buffer, target->pack_size(), MPI_FLOAT, recv_node, 0, MPI_COMM_WORLD, &request);
+      if ( recv_node != rank ) {
+        MPI_Request request;
+        MPI_Isend(send_buffer, target->pack_size(), MPI_FLOAT, recv_node, 0, MPI_COMM_WORLD, &request);
+      }
 
       cout << "Send best individual to " << recv_node << " send buffer " << send_buffer[0] << endl;
 
       cout << "Rank " << rank << " iteration " << iteration << ": best fitness of " << population->get(0)->fitness << " with a fitness range of " << population->get(POPULATION_SIZE - 1)->fitness - population->get(0)->fitness << endl;
 
-      char filename[100];
-      snprintf(filename, 100, "output/%i/iteration-%i.gif", rank, iteration);
+      char filename[50];
+      snprintf(filename, 100, "output/%i-iteration-%i.jpg", rank, iteration);
       population->save_individual(0, filename);
-
-      char command[200];
-      snprintf(command, 200, "cp /home/hps1/evolutionaryimages/output/%i/iteration-%i.gif /home/hps1/evolutionaryimages/output/%i/recent.gif", rank, iteration, rank );
-
-      system(command);
     }
   }
 

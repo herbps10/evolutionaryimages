@@ -8,6 +8,7 @@ class Population
 	~Population();
 
   void iterate();
+//  void randomize_a_back_polygon_and_move_to_front();
   void save_individual(int n, char *filename);
   Image *get(int n);
 
