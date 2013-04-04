@@ -176,7 +176,6 @@ void Image::randomize_polygons()
     {
       polygons[poly_index].points[vertex_index].x = center_x + rand_one() * ((float)DEFAULT_WIDTH / 10.0) - ((float)DEFAULT_WIDTH / 20.0);
       polygons[poly_index].points[vertex_index].y = center_y + rand_one() * ((float)DEFAULT_HEIGHT / 10.0) - ((float)DEFAULT_HEIGHT / 20.0);
-      polygons[poly_index].points[vertex_index].z = rand_one();
 
 
       // Make sure the point doesn't lie outside the bounds of the image
