@@ -56,23 +56,23 @@ double Image::sumOfSquaresError(float *buffer, int height, int width)
 Image::Image()
 {
     image_buffer = NULL;
-    polygon_buffer = NULL;
+//    polygon_buffer = NULL;
 }
 
 Image::~Image() {
     free(image_buffer);
-    free(polygon_buffer);
+//    free(polygon_buffer);
 }
 
-void Image::allocate_polygons()
-{
-  // Allocate space for the polygon_buffer
-  // NOTE: image_buffer and polygon_buffer may not be the same size. Either we'll have to adjust that here or we'll have to write a fitness function that is aware of this
-  // do not change the size of this buffer without making appropriate changes in display()
-  polygon_buffer = (float*)malloc(sizeof(float) * DEFAULT_WIDTH * DEFAULT_HEIGHT * 3);
-  if( polygon_buffer == NULL )
-    fprintf(stderr, "error malloc-ing polygon_buffer\n");
-}
+//void Image::allocate_polygons()
+//{
+//  // Allocate space for the polygon_buffer
+//  // NOTE: image_buffer and polygon_buffer may not be the same size. Either we'll have to adjust that here or we'll have to write a fitness function that is aware of this
+//  // do not change the size of this buffer without making appropriate changes in display()
+//  polygon_buffer = (float*)malloc(sizeof(float) * DEFAULT_WIDTH * DEFAULT_HEIGHT * 3);
+//  if( polygon_buffer == NULL )
+//    fprintf(stderr, "error malloc-ing polygon_buffer\n");
+//}
 
 void Image::allocate_image_buffer(int buffer_width, int buffer_height)
 {
@@ -179,7 +179,7 @@ void Image::randomize_polygons()
       polygons[poly_index].points[vertex_index].z = rand_one();
 
 
-      // Make sure the point doesn't lie outside the bounds of the iamge
+      // Make sure the point doesn't lie outside the bounds of the image
       if(polygons[poly_index].points[vertex_index].x < 0)
         polygons[poly_index].points[vertex_index].x = 0;
 
@@ -205,7 +205,7 @@ void Image::print()
     cout << "Points" << endl;
     for(int j = 0; j < polygons[i].num_p; j++)
     {
-      cout << polygons[i].points[j].x << "," << polygons[i].points[j].y << "," << polygons[i].points[j].z << endl;
+      cout << polygons[i].points[j].x << "," << polygons[i].points[j].y << /*"," << polygons[i].points[j].z <<*/ endl;
     }
   }
 }
@@ -328,6 +328,64 @@ void Image::calculate_fitness(Image *target)
 	fitness = sumOfError(target->image_buffer, DEFAULT_HEIGHT, DEFAULT_WIDTH);
 }
 
+void Image::randomize_a_back_polygon_and_move_to_front() {
+  for(int i=MAX_POLYGONS-1; i>0; i--) {
+    if ( rand_one() < 0.2f ) {
+      // push entries down
+      for(int j=i;j>0;j--) {
+        polygons[j].color.r = polygons[j-1].color.r;
+        polygons[j].color.g = polygons[j-1].color.g;
+        polygons[j].color.b = polygons[j-1].color.b;
+        polygons[j].color.a = polygons[j-1].color.a;
+
+		for(int p=0;p<MAX_POINTS;p++) {
+          polygons[j].points[p].x = polygons[j-1].points[p].x;
+          polygons[j].points[p].y = polygons[j-1].points[p].y;
+		}
+		
+		polygons[j].num_p = polygons[j-1].num_p;
+		//cout << j << " ";
+	   }
+	   //cout << endl;
+      
+      // new random polygon
+	  // TO-DO: make random_polygon function in Image
+      int num_points = MAX_POINTS;
+  
+      polygons[0].num_p = num_points;
+  
+      polygons[0].color.r = rand_one();
+      polygons[0].color.g = rand_one();
+      polygons[0].color.b = rand_one();
+      polygons[0].color.a = rand_one();
+  
+  
+      for(int vertex_index = 0; vertex_index < num_points; vertex_index++)
+      {
+        polygons[0].points[vertex_index].x = rand_one() * (float)DEFAULT_WIDTH;
+        polygons[0].points[vertex_index].y = rand_one() * (float)DEFAULT_HEIGHT;
+        //polygons[poly_index].points[vertex_index].z = rand_one();
+  
+  
+        // Make sure the point doesn't lie outside the bounds of the image
+        if(polygons[0].points[vertex_index].x < 0)
+          polygons[0].points[vertex_index].x = 0;
+  
+        if(polygons[0].points[vertex_index].y < 0)
+          polygons[0].points[vertex_index].y = 0;
+  
+        if(polygons[0].points[vertex_index].x >= DEFAULT_WIDTH)
+          polygons[0].points[vertex_index].x = DEFAULT_WIDTH - 1;
+  
+        if(polygons[0].points[vertex_index].y >= DEFAULT_HEIGHT)
+          polygons[0].points[vertex_index].y = DEFAULT_HEIGHT - 1;
+      }
+  
+      break; 
+    }
+  }
+}
+
 void Image::mutate()
 {
   int i = (int)(rand_one() * (float)MAX_POLYGONS);
@@ -356,10 +414,10 @@ void Image::mutate()
     }
     else
     {
-      polygons[i].color.r += rand_range(-0.02, 0.02); 
-      polygons[i].color.g += rand_range(-0.02, 0.02);
-      polygons[i].color.b += rand_range(-0.02, 0.02);
-      polygons[i].color.a += rand_range(-0.02, 0.02);
+      polygons[i].color.r += rand_range(-0.02f, 0.02f); 
+      polygons[i].color.g += rand_range(-0.02f, 0.02f);
+      polygons[i].color.b += rand_range(-0.02f, 0.02f);
+      polygons[i].color.a += rand_range(-0.02f, 0.02f);
     }
     
     if(polygons[i].points[index].x < 0) polygons[i].points[index].x = 0;
@@ -464,7 +522,7 @@ void Image::recombine(Image* first, Image* second)
     {
       polygons[i].points[j].x = temp->polygons[i].points[j].x;
       polygons[i].points[j].y = temp->polygons[i].points[j].y;
-      polygons[i].points[j].z = temp->polygons[i].points[j].z;
+      //polygons[i].points[j].z = temp->polygons[i].points[j].z;
     }
 
 		polygons[i].color.r = temp->polygons[i].color.r;
@@ -486,6 +544,8 @@ int Image::pack_size() {
 float *Image::pack()
 {
   float *buffer = (float *) malloc(sizeof(float) * pack_size());
+  if (buffer == NULL)
+  	fprintf(stderr, "Error mallocing in Image:pack\n");
 
   for(int i = 0; i < MAX_POLYGONS; i++)
   {

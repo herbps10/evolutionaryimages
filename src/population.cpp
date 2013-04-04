@@ -36,8 +36,14 @@ void Population::iterate()
   int i1 = rand_one() * elitism;
   int i2 = rand_one() * elitism;
 
+
   this->new_individual->recombine(population[i1], population[i2]);
   this->new_individual->mutate();
+
+  if( rand_one() < 0.4f ) {
+    this->new_individual->randomize_a_back_polygon_and_move_to_front();
+  	//cout << this << " " << this->new_individual->image_buffer << " " << this->new_individual->image_buffer[0] << "\n" << endl;
+  }
 
   this->new_individual->render_scanline();
   this->new_individual->calculate_fitness(this->target);

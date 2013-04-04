@@ -3,10 +3,11 @@
 
 class Image
 {
-  private:
+  //private:
+  public:
 
   float *image_buffer;
-  float *polygon_buffer;
+  //float *polygon_buffer;
 
 
   // private error calculating functions to be called by fitness
@@ -53,6 +54,8 @@ class Image
   void recombine_pixels(Image*, Image*);
   void mutate();
   void mutate_pixels();
+
+  void randomize_a_back_polygon_and_move_to_front();
 
   void set_color(float r, float g, float b);
 
